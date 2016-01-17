@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Editors">
+        <folder name="text">
+	    <folder name="javascript"/>	
+	</folder>
+        <folder name="AnnotationTypes">
+	    <file name="se-jocke-nb-eslint-JSLintErrorAnnotation.xml" url="JSLintErrorAnnotation.xml"/>
+	    <file name="se-jocke-nb-eslint-JSLintWarnAnnotation.xml" url="JSLintWarnAnnotation.xml"/>
+	</folder>
+    </folder>
+</filesystem>
