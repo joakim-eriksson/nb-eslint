@@ -1,2 +1,2 @@
 # nb-eslint
-ESLint support for nerbeans
+ESLint support for netbeans
