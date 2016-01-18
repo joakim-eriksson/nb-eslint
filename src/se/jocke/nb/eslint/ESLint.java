@@ -3,6 +3,8 @@ package se.jocke.nb.eslint;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,6 +28,8 @@ public class ESLint {
     private static final ESLint ES_LINT = new ESLint();
   
     private static final Pattern LINT_PATTERN = Pattern.compile("(.*):\\s+line\\s+(\\d+),\\s+col\\s(\\d+),\\s+(\\w*)\\s-(.*)");
+    
+    private static final Logger LOG = Logger.getLogger(ESLint.class.getName());
 
     public void verify(FileObject fileObject, final ErrorReporter reporter) {
 
@@ -63,6 +67,7 @@ public class ESLint {
                             String message = matcher.group(5);
                             reporter.handle(new LintError(file, line, col, type, message));
                         } else {
+                            LOG.log(Level.INFO, "Line {0}", string);
                             ErrorManager.getDefault().log(string);
                         }
                     }
@@ -71,7 +76,11 @@ public class ESLint {
         });
 
         final org.netbeans.api.extexecution.base.ProcessBuilder builder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
+        
+        LOG.log(Level.INFO, "Running command {0}", command);
+        
         builder.setExecutable(command);
+        
         builder.setArguments(Arrays.asList(
                 "--config",
                 prefs.get(Constants.ESLINT_CONF, Paths.get(System.getProperty("user.home"), ".eslintrc").toString()),

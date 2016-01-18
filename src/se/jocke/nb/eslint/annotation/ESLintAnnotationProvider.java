@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -30,6 +32,8 @@ import se.jocke.nb.eslint.error.LintError;
 public class ESLintAnnotationProvider extends FileChangeAdapter implements AnnotationProvider {
 
     private static final Map<FileObject, Set<Annotation>> MAPPING = new HashMap<>();
+    
+    private static final Logger LOG = Logger.getLogger(ESLintAnnotationProvider.class.getName());
 
     @Override
     public void annotate(Line.Set arg0, Lookup lookup) {
@@ -37,6 +41,8 @@ public class ESLintAnnotationProvider extends FileChangeAdapter implements Annot
     }
 
     public void apply(final FileObject fileObject) {
+        
+       LOG.log(Level.INFO, "Start index file {0}", fileObject.getMIMEType());
 
         if (fileObject.getMIMEType().contains("javascript")) {
 
@@ -53,6 +59,7 @@ public class ESLintAnnotationProvider extends FileChangeAdapter implements Annot
                 final LineCookie lineCookie = dataObject.getLookup().lookup(LineCookie.class);
                 
                 if(lineCookie == null) {
+                    LOG.info("Line cockie null");
                     return;
                 }
 
