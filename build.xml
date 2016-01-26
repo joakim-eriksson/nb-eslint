@@ -5,4 +5,31 @@
 <project name="se.jocke.nb.eslint" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project se.jocke.nb.eslint.</description>
     <import file="nbproject/build-impl.xml"/>
+     
+    <target name="netbeans-extra">
+        <echo output="Run -init"/>
+        <!--Create/Update keystore-->
+        <delete file="${keystore.location}${keystore.name}"/>
+        <mkdir dir="${keystore.location}"/>
+        <genkey alias="${keystore.alias}" storepass="${keystore.password}"
+                dname="${keystore.dname}"
+                keystore="${keystore.location}${keystore.name}"/>
+        <!--Update keystore info in projects-->
+        <antcall target="update-keystore-info"/>
+    </target>
+
+    <target name="update-keystore-info">
+        <sequential>
+            <propertyfile file="nbproject/project.properties">
+                <entry  key="keystore" value="${keystore.location}${keystore.name}"/>
+                <entry  key="nbm_alias" value="${keystore.alias}"/>
+            </propertyfile>
+            <mkdir dir="nbproject/private/"/>
+            <!--Place the password in the private properties file-->
+            <propertyfile file="nbproject/private/platform-private.properties">
+                <entry  key="storepass" value="${keystore.password}"/>
+            </propertyfile>
+        </sequential>   
+    </target>
+
 </project>
