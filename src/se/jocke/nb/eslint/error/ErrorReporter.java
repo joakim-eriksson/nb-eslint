@@ -7,4 +7,6 @@ package se.jocke.nb.eslint.error;
 public interface ErrorReporter {
     
     void handle(LintError error);
+    
+    void done();
 }

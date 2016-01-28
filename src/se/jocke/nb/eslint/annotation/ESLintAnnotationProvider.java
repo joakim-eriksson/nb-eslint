@@ -32,7 +32,7 @@ import se.jocke.nb.eslint.error.LintError;
 public class ESLintAnnotationProvider extends FileChangeAdapter implements AnnotationProvider {
 
     private static final Map<FileObject, Set<Annotation>> MAPPING = new HashMap<>();
-    
+
     private static final Logger LOG = Logger.getLogger(ESLintAnnotationProvider.class.getName());
 
     @Override
@@ -41,8 +41,8 @@ public class ESLintAnnotationProvider extends FileChangeAdapter implements Annot
     }
 
     public void apply(final FileObject fileObject) {
-        
-       LOG.log(Level.INFO, "Start index file {0}", fileObject.getMIMEType());
+
+        LOG.log(Level.INFO, "Start index file {0}", fileObject.getMIMEType());
 
         if (fileObject.getMIMEType().contains("javascript")) {
 
@@ -53,12 +53,12 @@ public class ESLintAnnotationProvider extends FileChangeAdapter implements Annot
                 MAPPING.put(fileObject, new HashSet<Annotation>());
                 fileObject.addFileChangeListener(this);
             }
-            
+
             try {
                 final DataObject dataObject = DataObject.find(fileObject);
                 final LineCookie lineCookie = dataObject.getLookup().lookup(LineCookie.class);
-                
-                if(lineCookie == null) {
+
+                if (lineCookie == null) {
                     LOG.info("Line cockie null");
                     return;
                 }
@@ -75,7 +75,7 @@ public class ESLintAnnotationProvider extends FileChangeAdapter implements Annot
                                 error.getLine(),
                                 error.getCol(),
                                 currentPartLine);
-                        
+
                         MAPPING.get(fileObject).add(annotation);
 
                         annotation.addPropertyChangeListener(new PropertyChangeListener() {
@@ -89,6 +89,11 @@ public class ESLintAnnotationProvider extends FileChangeAdapter implements Annot
                                 }
                             }
                         });
+                    }
+
+                    @Override
+                    public void done() {
+                        LOG.log(Level.FINE, "Scannig done of {0}", fileObject.getName());
                     }
                 });
 

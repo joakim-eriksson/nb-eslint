@@ -12,7 +12,6 @@ import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
 import org.netbeans.api.extexecution.base.BaseExecutionService;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
-import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbPreferences;
@@ -26,19 +25,19 @@ import se.jocke.nb.eslint.error.LintError;
 public class ESLint {
 
     private static final ESLint ES_LINT = new ESLint();
-  
+
     private static final Pattern LINT_PATTERN = Pattern.compile("(.*):\\s+line\\s+(\\d+),\\s+col\\s(\\d+),\\s+(\\w*)\\s-(.*)");
-    
+
     private static final Logger LOG = Logger.getLogger(ESLint.class.getName());
 
     public void verify(FileObject fileObject, final ErrorReporter reporter) {
 
         final Preferences prefs = NbPreferences.forModule(ESLint.class);
 
-        String command = prefs.get(Constants.ESLINT_PATH, "/usr/local/bin");
+        String command = prefs.get(Constants.ESLINT_PATH, "/usr/local/bin/eslint");
 
         BaseExecutionDescriptor descriptor = new BaseExecutionDescriptor();
-        
+
         descriptor = descriptor.errProcessorFactory(new BaseExecutionDescriptor.InputProcessorFactory() {
             @Override
             public InputProcessor newInputProcessor() {
@@ -50,7 +49,6 @@ public class ESLint {
                 });
             }
         });
-        
 
         descriptor = descriptor.outProcessorFactory(new BaseExecutionDescriptor.InputProcessorFactory() {
             @Override
@@ -67,20 +65,26 @@ public class ESLint {
                             String message = matcher.group(5);
                             reporter.handle(new LintError(file, line, col, type, message));
                         } else {
-                            LOG.log(Level.INFO, "Line {0}", string);
-                            ErrorManager.getDefault().log(string);
+                            LOG.log(Level.FINE, "Line {0}", string);
                         }
                     }
+
+                    @Override
+                    public void close() {
+                        LOG.log(Level.FINE, "Scanning done");
+                        reporter.done();
+                    }
+
                 });
             }
         });
 
         final org.netbeans.api.extexecution.base.ProcessBuilder builder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
-        
+
         LOG.log(Level.INFO, "Running command {0}", command);
-        
+
         builder.setExecutable(command);
-        
+
         builder.setArguments(Arrays.asList(
                 "--config",
                 prefs.get(Constants.ESLINT_CONF, Paths.get(System.getProperty("user.home"), ".eslintrc").toString()),
@@ -101,19 +105,5 @@ public class ESLint {
 
     public static ESLint getDefault() {
         return ES_LINT;
-    }
-    
-    private abstract class LineProcessorAdapter implements LineProcessor {
-
-        @Override
-        public void reset() {
-            
-        }
-
-        @Override
-        public void close() {
-            
-        }
-        
     }
 }

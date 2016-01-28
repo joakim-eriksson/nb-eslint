@@ -3,11 +3,19 @@
 <filesystem>
     <folder name="Editors">
         <folder name="text">
-	    <folder name="javascript"/>	
-	</folder>
+            <folder name="javascript"/>	
+        </folder>
         <folder name="AnnotationTypes">
-	    <file name="se-jocke-nb-eslint-JSLintErrorAnnotation.xml" url="JSLintErrorAnnotation.xml"/>
-	    <file name="se-jocke-nb-eslint-JSLintWarnAnnotation.xml" url="JSLintWarnAnnotation.xml"/>
-	</folder>
+            <file name="se-jocke-nb-eslint-JSLintErrorAnnotation.xml" url="JSLintErrorAnnotation.xml"/>
+            <file name="se-jocke-nb-eslint-JSLintWarnAnnotation.xml" url="JSLintWarnAnnotation.xml"/>
+        </folder>
+    </folder>
+    <folder name="TaskList">
+        <folder name="Scanners">
+            <file name="ESLintTaskScanner.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.PushTaskScanner"/>
+                <attr name="instanceCreate" methodvalue="se.jocke.nb.eslint.task.ESLintTaskScanner.create"/>
+            </file>
+        </folder>
     </folder>
 </filesystem>
