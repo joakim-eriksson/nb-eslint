@@ -6,12 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -19,6 +22,7 @@ import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
+import org.openide.util.Lookup;
 import se.jocke.nb.eslint.ESLint;
 import se.jocke.nb.eslint.error.ErrorReporter;
 import se.jocke.nb.eslint.error.LintError;
@@ -66,6 +70,18 @@ public class ESLintTaskScanner extends PushTaskScanner {
     @Override
     public void setScope(final TaskScanningScope scope, final Callback callback) {
 
+        if (root != null) {
+            root.removeRecursiveListener(fileCreatedListener);
+        }
+
+        for (FileChangeListener listener : changeListeners) {
+            listener.dispose();
+        }
+
+        if (this.callback != null) {
+            this.callback.clearAllTasks();
+        }
+
         if (callback == null) {
             LOG.warning("Callback null!!!!!");
             return;
@@ -78,16 +94,6 @@ public class ESLintTaskScanner extends PushTaskScanner {
 
         this.callback = callback;
         this.scope = scope;
-
-        if (root != null) {
-            root.removeRecursiveListener(fileCreatedListener);
-        }
-
-        for (FileChangeListener listener : changeListeners) {
-            listener.dispose();
-        }
-
-        callback.clearAllTasks();
 
         Project project = scope.getLookup().lookup(Project.class);
 
@@ -102,51 +108,53 @@ public class ESLintTaskScanner extends PushTaskScanner {
 
         callback.started();
 
-        final AtomicBoolean consumes = new AtomicBoolean(true);
-
-        final AtomicInteger count = new AtomicInteger(0);
-
         scope.forEach(new Consumer<FileObject>() {
 
             @Override
             public void accept(final FileObject file) {
-
                 if (isTargetFile(file)) {
                     FileChangeListener listener = new FileChangeListener(file);
                     file.addFileChangeListener(listener);
                     changeListeners.add(listener);
-
-                    count.incrementAndGet();
-
                     LOG.log(Level.FINE, "Start scanning file {0}", file.getPath());
-
-                    ESLint.getDefault().verify(file, new SimpleErrorReporter(file) {
-                        @Override
-                        public void done() {
-                            super.done();
-                            if (!consumes.get() && count.decrementAndGet() <= 0) {
-                                callback.finished();
-                            }
-                        }
-
-                    });
+                    Future<Integer> future = ESLint.getDefault().verify(file, new SimpleErrorReporter(file));
+                    try {
+                        future.get(10, TimeUnit.SECONDS);
+                    } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+                        LOG.info("Timeout ESLint");
+                    }
                 }
             }
         });
 
-        consumes.set(false);
+        callback.finished();
 
-        if (count.get() <= 0) {
-            callback.finished();
-        }
     }
 
-    public boolean isTargetFile(final FileObject file) {
-        return scope.isInScope(file) && !file.isFolder() && "JS".equals(file.getExt().toUpperCase()) && !isNBFile(file);
+    private boolean isTargetFile(final FileObject file) {
+        return scope.isInScope(file) && !file.isFolder() && "JS".equals(file.getExt().toUpperCase()) && !isNBFile(file) && isVisible(file);
     }
 
     private boolean isNBFile(FileObject file) {
         return file.getPath().startsWith("jsstubs") || file.getPath().startsWith("js-domstubs");
+    }
+
+    private boolean isVisible(FileObject fileObject) {
+
+        FileObject parent = fileObject.getParent();
+
+        VisibilityQueryImplementation query = Lookup.getDefault().lookup(VisibilityQueryImplementation.class);
+
+        while (parent != null) {
+
+            if (!query.isVisible(parent)) {
+                return false;
+            }
+
+            parent = parent.getParent();
+        }
+
+        return true;
     }
 
     private class SimpleErrorReporter implements ErrorReporter {

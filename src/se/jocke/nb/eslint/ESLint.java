@@ -3,6 +3,7 @@ package se.jocke.nb.eslint;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -30,7 +31,7 @@ public class ESLint {
 
     private static final Logger LOG = Logger.getLogger(ESLint.class.getName());
 
-    public void verify(FileObject fileObject, final ErrorReporter reporter) {
+    public Future<Integer> verify(FileObject fileObject, final ErrorReporter reporter) {
 
         final Preferences prefs = NbPreferences.forModule(ESLint.class);
 
@@ -100,7 +101,7 @@ public class ESLint {
             }
         }, descriptor);
 
-        service.run();
+        return service.run();
     }
 
     public static ESLint getDefault() {
