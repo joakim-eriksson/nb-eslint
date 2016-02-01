@@ -84,6 +84,10 @@ public class ESLint {
 
         LOG.log(Level.INFO, "Running command {0}", command);
 
+        if (fileObject.isFolder()) {
+            builder.setWorkingDirectory(fileObject.getPath());
+        }
+
         builder.setExecutable(command);
 
         builder.setArguments(Arrays.asList(
@@ -91,7 +95,7 @@ public class ESLint {
                 prefs.get(Constants.ESLINT_CONF, Paths.get(System.getProperty("user.home"), ".eslintrc").toString()),
                 "--format",
                 "compact",
-                fileObject.getPath()
+                fileObject.isFolder() ? "." : fileObject.getPath()
         ));
 
         BaseExecutionService service = BaseExecutionService.newService(new Callable<Process>() {
