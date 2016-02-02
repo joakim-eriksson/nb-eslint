@@ -2,6 +2,7 @@ package se.jocke.nb.eslint.task;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -39,8 +40,8 @@ public class ESLintTaskScanner extends PushTaskScanner {
     }
 
     private Callback callback;
-    
-    private FileObject root;
+
+    private final List<FileObject> roots = new ArrayList<>();
 
     private FileObject single;
 
@@ -79,9 +80,11 @@ public class ESLintTaskScanner extends PushTaskScanner {
     @Override
     public void setScope(final TaskScanningScope scope, final Callback callback) {
 
-        if (root != null) {
+        for (FileObject root : roots) {
             root.removeRecursiveListener(fileCreatedListener);
         }
+
+        roots.clear();
 
         if (single != null) {
             single.removeFileChangeListener(fileCreatedListener);
@@ -95,21 +98,25 @@ public class ESLintTaskScanner extends PushTaskScanner {
             LOG.warning("Callback null!!!!!");
             return;
         }
-        
+
         this.callback = callback;
 
-        Project project = scope.getLookup().lookup(Project.class);
+        Collection<? extends Project> projects = scope.getLookup().lookupAll(Project.class);
+        
         FileObject file = scope.getLookup().lookup(FileObject.class);
 
         callback.started();
 
         Future<Integer> future = null;
 
-        if (project != null) {
-            this.root = project.getProjectDirectory();
-            LOG.log(Level.FINE, "Adding recursive listener to {0}", project);
-            project.getProjectDirectory().addRecursiveListener(fileCreatedListener);
-            future = ESLint.getDefault().verify(project.getProjectDirectory(), new SimpleErrorReporter());
+        if (!projects.isEmpty()) {
+
+            for (Project project : projects) {
+                this.roots.add(project.getProjectDirectory());
+                project.getProjectDirectory().addRecursiveListener(fileCreatedListener);
+                LOG.log(Level.FINE, "Adding recursive listener to {0}", projects);
+                future = ESLint.getDefault().verify(project.getProjectDirectory(), new SimpleErrorReporter());
+            }
 
         } else if (file != null && !file.isFolder() && file.getExt().equalsIgnoreCase("js")) {
             this.single = file;
