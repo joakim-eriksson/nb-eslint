@@ -111,7 +111,7 @@ public class ESLintTaskScanner extends PushTaskScanner {
             project.getProjectDirectory().addRecursiveListener(fileCreatedListener);
             future = ESLint.getDefault().verify(project.getProjectDirectory(), new SimpleErrorReporter());
 
-        } else if (file != null) {
+        } else if (file != null && !file.isFolder() && file.getExt().equalsIgnoreCase("js")) {
             this.single = file;
             this.single.addFileChangeListener(fileCreatedListener);
             this.watched.add(file);
