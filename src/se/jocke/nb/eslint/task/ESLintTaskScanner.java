@@ -8,12 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.openide.filesystems.FileObject;
@@ -41,29 +41,7 @@ public class ESLintTaskScanner extends PushTaskScanner {
 
     private Callback callback;
 
-    private final List<FileObject> roots = new ArrayList<>();
-
-    private FileObject single;
-
-    private final Set<FileObject> watched = Collections.newSetFromMap(new ConcurrentHashMap<FileObject, Boolean>());
-
-    private final FileChangeAdapter fileCreatedListener = new FileChangeAdapter() {
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            if (watched.contains(fe.getFile())) {
-                callback.setTasks(fe.getFile(), Collections.EMPTY_LIST);
-            }
-        }
-
-        @Override
-        public void fileChanged(FileEvent fe) {
-            if (watched.contains(fe.getFile())) {
-                callback.setTasks(fe.getFile(), Collections.EMPTY_LIST);
-                ESLint.getDefault().verify(fe.getFile(), new SimpleErrorReporter());
-            }
-        }
-    };
+    private final List<Stoppable> listeners = new ArrayList<>();
 
     public ESLintTaskScanner(String name, String desc) {
         super(name, desc, null);
@@ -80,15 +58,11 @@ public class ESLintTaskScanner extends PushTaskScanner {
     @Override
     public void setScope(final TaskScanningScope scope, final Callback callback) {
 
-        for (FileObject root : roots) {
-            root.removeRecursiveListener(fileCreatedListener);
+        for (Stoppable stoppable : listeners) {
+            stoppable.stop();
         }
 
-        roots.clear();
-
-        if (single != null) {
-            single.removeFileChangeListener(fileCreatedListener);
-        }
+        listeners.clear();
 
         if (this.callback != null) {
             this.callback.clearAllTasks();
@@ -102,7 +76,7 @@ public class ESLintTaskScanner extends PushTaskScanner {
         this.callback = callback;
 
         Collection<? extends Project> projects = scope.getLookup().lookupAll(Project.class);
-        
+
         FileObject file = scope.getLookup().lookup(FileObject.class);
 
         callback.started();
@@ -112,17 +86,25 @@ public class ESLintTaskScanner extends PushTaskScanner {
         if (!projects.isEmpty()) {
 
             for (Project project : projects) {
-                this.roots.add(project.getProjectDirectory());
-                project.getProjectDirectory().addRecursiveListener(fileCreatedListener);
-                LOG.log(Level.FINE, "Adding recursive listener to {0}", projects);
+                JSFileRecursiveListener listener = new JSFileRecursiveListener(project.getProjectDirectory());
                 future = ESLint.getDefault().verify(project.getProjectDirectory(), new SimpleErrorReporter());
+                listeners.add(listener);
+                listener.start();
             }
 
-        } else if (file != null && !file.isFolder() && file.getExt().equalsIgnoreCase("js")) {
-            this.single = file;
-            this.single.addFileChangeListener(fileCreatedListener);
-            this.watched.add(file);
-            future = ESLint.getDefault().verify(file, new SimpleErrorReporter());
+        } else if (isJavascriptFile(file)) {
+            Project project = FileOwnerQuery.getOwner(file);
+            if (project != null) {
+                ESLintIgnore ignore = ESLintIgnore.get(project.getProjectDirectory());
+                if (!ignore.isIgnored(file)) {
+                    JSFileListener listener = new JSFileListener(file);
+                    future = ESLint.getDefault().verify(file, new SimpleErrorReporter());
+                    listeners.add(listener);
+                    listener.start();
+                }
+            } else {
+                LOG.log(Level.WARNING, "Project for file not found {0}", file);
+            }
         }
 
         if (future != null) {
@@ -135,6 +117,10 @@ public class ESLintTaskScanner extends PushTaskScanner {
 
         callback.finished();
 
+    }
+
+    public static boolean isJavascriptFile(FileObject file) {
+        return file != null && !file.isFolder() && file.getExt().equalsIgnoreCase("js");
     }
 
     private class SimpleErrorReporter implements ErrorReporter {
@@ -156,11 +142,80 @@ public class ESLintTaskScanner extends PushTaskScanner {
 
         @Override
         public void done() {
-            watched.addAll(tasks.keySet());
             for (Map.Entry<FileObject, List<Task>> entry : tasks.entrySet()) {
                 callback.setTasks(entry.getKey(), entry.getValue());
             }
         }
 
+    }
+
+    private interface Stoppable {
+
+        void stop();
+    }
+
+    private class JSFileRecursiveListener extends FileChangeAdapter implements Stoppable {
+
+        private final FileObject root;
+
+        private final ESLintIgnore ignore;
+
+        public JSFileRecursiveListener(FileObject root) {
+            this.root = root;
+            this.ignore = ESLintIgnore.get(root);
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            if (isJavascriptFile(fe.getFile()) && !ignore.isIgnored(fe.getFile())) {
+                callback.setTasks(fe.getFile(), Collections.EMPTY_LIST);
+            }
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            if (isJavascriptFile(fe.getFile()) && !ignore.isIgnored(fe.getFile())) {
+                callback.setTasks(fe.getFile(), Collections.EMPTY_LIST);
+                ESLint.getDefault().verify(fe.getFile(), new SimpleErrorReporter());
+            }
+        }
+
+        public void start() {
+            root.addRecursiveListener(this);
+        }
+
+        @Override
+        public void stop() {
+            root.removeRecursiveListener(this);
+        }
+    }
+
+    private class JSFileListener extends FileChangeAdapter implements Stoppable {
+
+        private final FileObject file;
+
+        public JSFileListener(FileObject file) {
+            this.file = file;
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            callback.setTasks(fe.getFile(), Collections.EMPTY_LIST);
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            callback.setTasks(fe.getFile(), Collections.EMPTY_LIST);
+            ESLint.getDefault().verify(fe.getFile(), new SimpleErrorReporter());
+        }
+
+        public void start() {
+            file.addFileChangeListener(this);
+        }
+
+        @Override
+        public void stop() {
+            file.removeFileChangeListener(this);
+        }
     }
 }
