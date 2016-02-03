@@ -5,8 +5,10 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -22,12 +24,8 @@ public class ESLintIgnore {
 
     private ESLintIgnore(FileObject root, List<PathMatcher> pathMatchers) {
         this.root = root;
-        this.pathMatchers = pathMatchers;
-    }
-
-    private ESLintIgnore() {
-        this.root = null;
-        this.pathMatchers = null;
+        this.pathMatchers = new ArrayList<>(pathMatchers);
+        this.pathMatchers.add(FileSystems.getDefault().getPathMatcher("glob:node_modules/**/*"));
     }
 
     public static ESLintIgnore get(FileObject fileObject) {
@@ -37,15 +35,16 @@ public class ESLintIgnore {
                 List<PathMatcher> pathMatchers = new ArrayList<>();
                 final List<String> lines = ignore.asLines();
                 for (String glob : lines) {
-                    glob = glob.endsWith("/") ? glob + "*" : glob;
+                    glob = glob.endsWith("/") ? glob + "**/*" : glob;
                     pathMatchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
                 }
                 return new ESLintIgnore(fileObject, pathMatchers);
             } catch (IOException iOException) {
-                return new ESLintIgnore(fileObject, Arrays.asList(FileSystems.getDefault().getPathMatcher("glob:node_modules/*")));
+                Logger.getLogger(ESLintIgnore.class.getName()).log(Level.WARNING, "Failed to read ignore file");
+                return new ESLintIgnore(fileObject, Collections.EMPTY_LIST);
             }
         } else if (fileObject.isFolder()) {
-            return new ESLintIgnore(fileObject, Arrays.asList(FileSystems.getDefault().getPathMatcher("glob:node_modules/*")));
+            return new ESLintIgnore(fileObject, Collections.EMPTY_LIST);
 
         } else {
             throw new IllegalArgumentException("Not a folder " + fileObject);
