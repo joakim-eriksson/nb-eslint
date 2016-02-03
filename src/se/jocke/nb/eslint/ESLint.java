@@ -13,6 +13,8 @@ import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
 import org.netbeans.api.extexecution.base.BaseExecutionService;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbPreferences;
@@ -30,6 +32,8 @@ public class ESLint {
     private static final Pattern LINT_PATTERN = Pattern.compile("(.*):\\s+line\\s+(\\d+),\\s+col\\s(\\d+),\\s+(\\w*)\\s-(.*)");
 
     private static final Logger LOG = Logger.getLogger(ESLint.class.getName());
+
+    public static final String ESLINTRC = ".eslintrc";
 
     public Future<Integer> verify(FileObject fileObject, final ErrorReporter reporter) {
 
@@ -90,9 +94,13 @@ public class ESLint {
 
         builder.setExecutable(command);
 
+        final String config = findConfig(fileObject);
+
+        LOG.log(Level.INFO, "Using config {0}", config);
+
         builder.setArguments(Arrays.asList(
                 "--config",
-                prefs.get(Constants.ESLINT_CONF, Paths.get(System.getProperty("user.home"), ".eslintrc").toString()),
+                config,
                 "--format",
                 "compact",
                 fileObject.isFolder() ? "." : fileObject.getPath()
@@ -106,6 +114,25 @@ public class ESLint {
         }, descriptor);
 
         return service.run();
+    }
+
+    public static String findConfig(FileObject fileObject) {
+
+        if (fileObject.isFolder() && fileObject.getFileObject(ESLINTRC) != null) {
+            return fileObject.getFileObject(".eslintrc").getPath();
+        }
+
+        if (!fileObject.isFolder()) {
+
+            Project project = FileOwnerQuery.getOwner(fileObject);
+
+            if (project != null && project.getProjectDirectory().getFileObject(ESLINTRC) != null) {
+                return project.getProjectDirectory().getFileObject(ESLINTRC).getPath();
+            }
+        }
+
+        Preferences prefs = NbPreferences.forModule(ESLint.class);
+        return prefs.get(Constants.ESLINT_CONF, Paths.get(System.getProperty("user.home"), ".eslintrc").toString());
     }
 
     public static ESLint getDefault() {
