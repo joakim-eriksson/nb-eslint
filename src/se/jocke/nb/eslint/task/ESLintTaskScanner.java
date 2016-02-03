@@ -119,7 +119,7 @@ public class ESLintTaskScanner extends PushTaskScanner {
 
     }
 
-    public static boolean isJavascriptFile(FileObject file) {
+    public boolean isJavascriptFile(FileObject file) {
         return file != null && !file.isFolder() && file.getExt().equalsIgnoreCase("js");
     }
 

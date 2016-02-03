@@ -14,9 +14,10 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
+        location = "Html5",
         displayName = "#AdvancedOption_DisplayName_ESLint",
         keywords = "#AdvancedOption_Keywords_ESLint",
-        keywordsCategory = "Advanced/ESLint"
+        keywordsCategory = "Html5/ESLint"
 )
 @org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_ESLint=ESLint", "AdvancedOption_Keywords_ESLint=eslint javascript lint"})
 public final class ESLintOptionsPanelController extends OptionsPanelController {
