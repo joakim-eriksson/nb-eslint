@@ -123,14 +123,12 @@ final class ESLintPanel extends javax.swing.JPanel {
 
     boolean valid() {
         File exec;
-        File conf;
         try {
             exec = new File(eslintPathTextField.getText());
-            conf = new File(confTextField.getText());
         } catch (Exception e) {
             return false;
         }
-        return exec.exists() && conf.exists() && exec.canExecute();
+        return exec.exists() && exec.canExecute();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
