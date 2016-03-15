@@ -17,6 +17,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 import se.jocke.nb.eslint.error.ErrorReporter;
 import se.jocke.nb.eslint.error.LintError;
@@ -89,7 +90,7 @@ public class ESLint {
         LOG.log(Level.INFO, "Running command {0}", command);
 
         if (fileObject.isFolder()) {
-            builder.setWorkingDirectory(fileObject.getPath());
+            builder.setWorkingDirectory(FileUtil.toFile(fileObject).getAbsolutePath());
         }
 
         builder.setExecutable(command);
@@ -103,7 +104,7 @@ public class ESLint {
                 config,
                 "--format",
                 "compact",
-                fileObject.isFolder() ? "." : fileObject.getPath()
+                fileObject.isFolder() ? "." : FileUtil.toFile(fileObject).getAbsolutePath() 
         ));
 
         BaseExecutionService service = BaseExecutionService.newService(new Callable<Process>() {
@@ -119,7 +120,7 @@ public class ESLint {
     public static String findConfig(FileObject fileObject) {
 
         if (fileObject.isFolder() && fileObject.getFileObject(ESLINTRC) != null) {
-            return fileObject.getFileObject(".eslintrc").getPath();
+            return FileUtil.toFile(fileObject.getFileObject(".eslintrc")).getAbsolutePath();
         }
 
         if (!fileObject.isFolder()) {
@@ -127,7 +128,7 @@ public class ESLint {
             Project project = FileOwnerQuery.getOwner(fileObject);
 
             if (project != null && project.getProjectDirectory().getFileObject(ESLINTRC) != null) {
-                return project.getProjectDirectory().getFileObject(ESLINTRC).getPath();
+                return FileUtil.toFile(project.getProjectDirectory().getFileObject(ESLINTRC)).getAbsolutePath();
             }
         }
 
