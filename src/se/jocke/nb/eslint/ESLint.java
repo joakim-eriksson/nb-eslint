@@ -15,6 +15,7 @@ import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -86,11 +87,21 @@ public class ESLint {
         });
 
         final org.netbeans.api.extexecution.base.ProcessBuilder builder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
+        String pathEnvVar = prefs.get(Constants.PATH_ENV_VAR, "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin");
+        LOG.log(Level.INFO, "PathEnvVar {0}", pathEnvVar);
+        
+        builder.getEnvironment().setVariable("PATH", pathEnvVar);
 
         LOG.log(Level.INFO, "Running command {0}", command);
 
         if (fileObject.isFolder()) {
-            builder.setWorkingDirectory(FileUtil.toFile(fileObject).getAbsolutePath());
+          builder.setWorkingDirectory(FileUtil.toFile(fileObject).getAbsolutePath());
+        }else{
+          Project project = ProjectUtils.getInformation(FileOwnerQuery.getOwner(fileObject)).getProject();
+          if (project != null) {
+            FileObject projectDirectory = project.getProjectDirectory();
+            builder.setWorkingDirectory(projectDirectory.getPath());
+          }
         }
 
         builder.setExecutable(command);
