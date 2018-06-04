@@ -89,7 +89,7 @@ public class ESLint {
         final org.netbeans.api.extexecution.base.ProcessBuilder builder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
         String pathEnvVar = prefs.get(Constants.PATH_ENV_VAR, "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin");
         LOG.log(Level.INFO, "PathEnvVar {0}", pathEnvVar);
-        
+
         builder.getEnvironment().setVariable("PATH", pathEnvVar);
 
         LOG.log(Level.INFO, "Running command {0}", command);
@@ -104,7 +104,7 @@ public class ESLint {
           }
         }
 
-        builder.setExecutable(command);
+        builder.setExecutable(command.trim());
 
         final String config = findConfig(fileObject);
 
@@ -115,7 +115,7 @@ public class ESLint {
                 config,
                 "--format",
                 "compact",
-                fileObject.isFolder() ? "." : FileUtil.toFile(fileObject).getAbsolutePath() 
+                fileObject.isFolder() ? "." : FileUtil.toFile(fileObject).getAbsolutePath()
         ));
 
         BaseExecutionService service = BaseExecutionService.newService(new Callable<Process>() {
