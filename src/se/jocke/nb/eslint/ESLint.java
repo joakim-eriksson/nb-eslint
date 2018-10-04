@@ -20,6 +20,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 import se.jocke.nb.eslint.error.ErrorReporter;
 import se.jocke.nb.eslint.error.LintError;
 
@@ -36,6 +37,16 @@ public class ESLint {
     private static final Logger LOG = Logger.getLogger(ESLint.class.getName());
 
     public static final String ESLINTRC = ".eslintrc";
+
+    public static final String ESLINT_CLI_NAME;
+
+    static {
+        if (Utilities.isWindows()) {
+            ESLINT_CLI_NAME = "eslint.cmd"; // NOI18N
+        } else {
+            ESLINT_CLI_NAME = "eslint"; // NOI18N
+        }
+    }
 
     public Future<Integer> verify(FileObject fileObject, final ErrorReporter reporter) {
 
