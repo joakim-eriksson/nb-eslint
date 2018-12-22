@@ -11,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
 import org.netbeans.api.extexecution.base.BaseExecutionService;
+import org.netbeans.api.extexecution.base.ProcessBuilder;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -97,7 +98,7 @@ public class ESLint {
             }
         });
 
-        final org.netbeans.api.extexecution.base.ProcessBuilder builder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
+        final ProcessBuilder builder = ProcessBuilder.getLocal();
         String pathEnvVar = prefs.get(Constants.PATH_ENV_VAR, "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin");
         LOG.log(Level.INFO, "PathEnvVar {0}", pathEnvVar);
 
@@ -108,11 +109,16 @@ public class ESLint {
         if (fileObject.isFolder()) {
           builder.setWorkingDirectory(FileUtil.toFile(fileObject).getAbsolutePath());
         }else{
-          Project project = ProjectUtils.getInformation(FileOwnerQuery.getOwner(fileObject)).getProject();
-          if (project != null) {
-            FileObject projectDirectory = project.getProjectDirectory();
-            builder.setWorkingDirectory(projectDirectory.getPath());
-          }
+            final Project owner = FileOwnerQuery.getOwner(fileObject);
+            
+            if (owner != null) {
+                Project project = ProjectUtils.getInformation(owner).getProject();
+                
+                if (project != null) {
+                    FileObject projectDirectory = project.getProjectDirectory();
+                    builder.setWorkingDirectory(projectDirectory.getPath());
+                }
+            }
         }
 
         builder.setExecutable(command.trim());
