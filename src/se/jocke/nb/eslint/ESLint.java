@@ -53,7 +53,7 @@ public class ESLint {
 
         final Preferences prefs = NbPreferences.forModule(ESLint.class);
 
-        String command = prefs.get(Constants.ESLINT_PATH, "/usr/local/bin/eslint");
+        String command = prefs.get(Constants.ESLINT_PATH, "");
 
         BaseExecutionDescriptor descriptor = new BaseExecutionDescriptor();
 
@@ -99,50 +99,57 @@ public class ESLint {
         });
 
         final ProcessBuilder builder = ProcessBuilder.getLocal();
-        String pathEnvVar = prefs.get(Constants.PATH_ENV_VAR, "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin");
-        LOG.log(Level.INFO, "PathEnvVar {0}", pathEnvVar);
+        String pathEnvVar = prefs.get(Constants.PATH_ENV_VAR, "");
+        
+        if (!pathEnvVar.isEmpty()) {
+            LOG.log(Level.INFO, "PathEnvVar {0}", pathEnvVar);
+            builder.getEnvironment().setVariable("PATH", pathEnvVar);
+        }
+        
 
-        builder.getEnvironment().setVariable("PATH", pathEnvVar);
-
-        LOG.log(Level.INFO, "Running command {0}", command);
-
-        if (fileObject.isFolder()) {
-          builder.setWorkingDirectory(FileUtil.toFile(fileObject).getAbsolutePath());
-        }else{
-            final Project owner = FileOwnerQuery.getOwner(fileObject);
+        if (!command.isEmpty()) {
+            LOG.log(Level.INFO, "Running command {0}", command);
             
-            if (owner != null) {
-                Project project = ProjectUtils.getInformation(owner).getProject();
+            if (fileObject.isFolder()) {
+                builder.setWorkingDirectory(FileUtil.toFile(fileObject).getAbsolutePath());
+            }else{
+                final Project owner = FileOwnerQuery.getOwner(fileObject);
                 
-                if (project != null) {
-                    FileObject projectDirectory = project.getProjectDirectory();
-                    builder.setWorkingDirectory(projectDirectory.getPath());
+                if (owner != null) {
+                    Project project = ProjectUtils.getInformation(owner).getProject();
+                    
+                    if (project != null) {
+                        FileObject projectDirectory = project.getProjectDirectory();
+                        builder.setWorkingDirectory(projectDirectory.getPath());
+                    }
                 }
             }
+            
+            builder.setExecutable(command.trim());
+
+            final String config = findConfig(fileObject);
+            
+            LOG.log(Level.INFO, "Using config {0}", config);
+            
+            builder.setArguments(Arrays.asList(
+                    "--config",
+                    config,
+                    "--format",
+                    "compact",
+                    fileObject.isFolder() ? "." : FileUtil.toFile(fileObject).getAbsolutePath()
+            ));
+            
+            BaseExecutionService service = BaseExecutionService.newService(new Callable<Process>() {
+                @Override
+                public Process call() throws Exception {
+                    return builder.call();
+                }
+            }, descriptor);
+            
+            return service.run();
         }
-
-        builder.setExecutable(command.trim());
-
-        final String config = findConfig(fileObject);
-
-        LOG.log(Level.INFO, "Using config {0}", config);
-
-        builder.setArguments(Arrays.asList(
-                "--config",
-                config,
-                "--format",
-                "compact",
-                fileObject.isFolder() ? "." : FileUtil.toFile(fileObject).getAbsolutePath()
-        ));
-
-        BaseExecutionService service = BaseExecutionService.newService(new Callable<Process>() {
-            @Override
-            public Process call() throws Exception {
-                return builder.call();
-            }
-        }, descriptor);
-
-        return service.run();
+        
+        return null;
     }
 
     public static String findConfig(FileObject fileObject) {
