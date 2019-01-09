@@ -41,10 +41,8 @@ public class ESLintAnnotationProvider extends FileChangeAdapter implements Annot
     }
 
     public void apply(final FileObject fileObject) {
-
-        LOG.log(Level.INFO, "Start index file {0}", fileObject.getMIMEType());
-
         if (fileObject.getMIMEType().contains("javascript")) {
+            LOG.log(Level.INFO, "Start index file {0}", fileObject.getMIMEType());
 
             if (MAPPING.containsKey(fileObject)) {
                 detachAll(fileObject);
