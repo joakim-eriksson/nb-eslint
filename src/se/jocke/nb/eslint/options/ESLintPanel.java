@@ -40,6 +40,10 @@ final class ESLintPanel extends javax.swing.JPanel {
         txtPathValue = new javax.swing.JTextField();
         searchButton = new javax.swing.JButton();
         descriptionLabel = new javax.swing.JLabel();
+        lintJavascript = new javax.swing.JCheckBox();
+        lintTypeScript = new javax.swing.JCheckBox();
+        lintRegExp = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
 
         fileChooser.setDialogTitle(org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.fileChooser.dialogTitle")); // NOI18N
         fileChooser.setFileFilter(null);
@@ -82,6 +86,15 @@ final class ESLintPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.descriptionLabel.text")); // NOI18N
 
+        lintJavascript.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(lintJavascript, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.lintJavascript.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(lintTypeScript, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.lintTypeScript.text")); // NOI18N
+
+        lintRegExp.setText(org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.lintRegExp.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.jLabel3.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -112,7 +125,16 @@ final class ESLintPanel extends javax.swing.JPanel {
                                     .addComponent(BrowseButton, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
                                     .addComponent(browseConfButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(searchButton)))))
+                                .addComponent(searchButton))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lintTypeScript)
+                            .addComponent(lintJavascript)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(lintRegExp, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -134,7 +156,15 @@ final class ESLintPanel extends javax.swing.JPanel {
                 .addComponent(txtPathValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel4)
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(lintJavascript)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(lintTypeScript)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lintRegExp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3))
+                .addContainerGap(49, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -168,12 +198,18 @@ final class ESLintPanel extends javax.swing.JPanel {
         eslintPathTextField.setText(prefs.get(Constants.ESLINT_PATH, null));
         confTextField.setText(prefs.get(Constants.ESLINT_CONF, Paths.get(System.getProperty("user.home"), ".eslintrc").toString()));
         txtPathValue.setText(prefs.get(Constants.PATH_ENV_VAR, null));
+        lintJavascript.setSelected(prefs.getBoolean(Constants.LINT_JAVASCRIPT, true));
+        lintTypeScript.setSelected(prefs.getBoolean(Constants.LINT_TYPESCRIPT, true));
+        lintRegExp.setText(prefs.get(Constants.LINT_REGEXP, null));
     }
 
     void store() {
         NbPreferences.forModule(ESLint.class).put(Constants.ESLINT_PATH, eslintPathTextField.getText());
         NbPreferences.forModule(ESLint.class).put(Constants.ESLINT_CONF, confTextField.getText());
         NbPreferences.forModule(ESLint.class).put(Constants.PATH_ENV_VAR, txtPathValue.getText());
+        NbPreferences.forModule(ESLint.class).put(Constants.LINT_JAVASCRIPT, Boolean.toString(this.lintJavascript.isSelected()));
+        NbPreferences.forModule(ESLint.class).put(Constants.LINT_TYPESCRIPT, Boolean.toString(this.lintTypeScript.isSelected()));
+        NbPreferences.forModule(ESLint.class).put(Constants.LINT_REGEXP, lintRegExp.getText());
     }
 
     boolean valid() {
@@ -195,7 +231,11 @@ final class ESLintPanel extends javax.swing.JPanel {
     private javax.swing.JFileChooser fileChooser;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JCheckBox lintJavascript;
+    private javax.swing.JTextField lintRegExp;
+    private javax.swing.JCheckBox lintTypeScript;
     private javax.swing.JButton searchButton;
     private javax.swing.JTextField txtPathValue;
     // End of variables declaration//GEN-END:variables
