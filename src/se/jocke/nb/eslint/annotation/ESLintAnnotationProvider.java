@@ -23,6 +23,7 @@ import org.openide.util.lookup.ServiceProvider;
 import se.jocke.nb.eslint.ESLint;
 import se.jocke.nb.eslint.error.ErrorReporter;
 import se.jocke.nb.eslint.error.LintError;
+import se.jocke.nb.eslint.options.OptionsUtil;
 
 /**
  *
@@ -41,7 +42,7 @@ public class ESLintAnnotationProvider extends FileChangeAdapter implements Annot
     }
 
     public void apply(final FileObject fileObject) {
-        if (fileObject.getMIMEType().contains("javascript")) {
+        if (OptionsUtil.isLintedFile(fileObject)) {
             LOG.log(Level.INFO, "Start index file {0}", fileObject.getMIMEType());
 
             if (MAPPING.containsKey(fileObject)) {

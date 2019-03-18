@@ -27,6 +27,7 @@ import org.openide.util.Exceptions;
 import se.jocke.nb.eslint.ESLint;
 import se.jocke.nb.eslint.error.ErrorReporter;
 import se.jocke.nb.eslint.error.LintError;
+import static se.jocke.nb.eslint.options.OptionsUtil.isLintedFile;
 
 public class ESLintTaskScanner extends PushTaskScanner {
 
@@ -92,7 +93,7 @@ public class ESLintTaskScanner extends PushTaskScanner {
                 listener.start();
             }
 
-        } else if (isJavascriptFile(file)) {
+        } else if (isLintedFile(file)) {
             Project project = FileOwnerQuery.getOwner(file);
             if (project != null) {
                 ESLintIgnore ignore = ESLintIgnore.get(project.getProjectDirectory());
@@ -117,10 +118,6 @@ public class ESLintTaskScanner extends PushTaskScanner {
 
         callback.finished();
 
-    }
-
-    public boolean isJavascriptFile(FileObject file) {
-        return file != null && !file.isFolder() && file.getExt().equalsIgnoreCase("js");
     }
 
     private class SimpleErrorReporter implements ErrorReporter {
@@ -167,14 +164,14 @@ public class ESLintTaskScanner extends PushTaskScanner {
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            if (isJavascriptFile(fe.getFile()) && !ignore.isIgnored(fe.getFile())) {
+            if (isLintedFile(fe.getFile()) && !ignore.isIgnored(fe.getFile())) {
                 callback.setTasks(fe.getFile(), Collections.EMPTY_LIST);
             }
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
-            if (isJavascriptFile(fe.getFile()) && !ignore.isIgnored(fe.getFile())) {
+            if (isLintedFile(fe.getFile()) && !ignore.isIgnored(fe.getFile())) {
                 callback.setTasks(fe.getFile(), Collections.EMPTY_LIST);
                 ESLint.getDefault().verify(fe.getFile(), new SimpleErrorReporter());
             }
