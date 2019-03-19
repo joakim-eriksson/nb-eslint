@@ -3,5 +3,5 @@ AutoUpdate-Show-In-Client: true
 OpenIDE-Module: se.jocke.nb.eslint
 OpenIDE-Module-Layer: se/jocke/nb/eslint/layer.xml
 OpenIDE-Module-Localizing-Bundle: se/jocke/nb/eslint/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.1.1
+OpenIDE-Module-Specification-Version: 1.1.2
 
