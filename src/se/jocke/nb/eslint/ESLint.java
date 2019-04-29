@@ -99,13 +99,6 @@ public class ESLint {
         });
 
         final ProcessBuilder builder = ProcessBuilder.getLocal();
-        String pathEnvVar = prefs.get(Constants.PATH_ENV_VAR, "");
-        
-        if (!pathEnvVar.isEmpty()) {
-            LOG.log(Level.INFO, "PathEnvVar {0}", pathEnvVar);
-            builder.getEnvironment().setVariable("PATH", pathEnvVar);
-        }
-        
 
         if (!command.isEmpty()) {
             LOG.log(Level.INFO, "Running command {0}", command);
