@@ -42,6 +42,7 @@ final class ESLintPanel extends javax.swing.JPanel {
         lintTypeScript = new javax.swing.JCheckBox();
         lintRegExp = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
+        configDescriptionLabel = new javax.swing.JLabel();
 
         fileChooser.setDialogTitle(org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.fileChooser.dialogTitle")); // NOI18N
         fileChooser.setFileFilter(null);
@@ -87,6 +88,8 @@ final class ESLintPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.jLabel3.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(configDescriptionLabel, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.configDescriptionLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -104,9 +107,6 @@ final class ESLintPanel extends javax.swing.JPanel {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(descriptionLabel)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(eslintPathTextField)
                                     .addComponent(confTextField))
@@ -115,7 +115,12 @@ final class ESLintPanel extends javax.swing.JPanel {
                                     .addComponent(BrowseButton, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
                                     .addComponent(browseConfButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(searchButton))))
+                                .addComponent(searchButton))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(descriptionLabel)
+                                    .addComponent(configDescriptionLabel))
+                                .addGap(0, 0, Short.MAX_VALUE))))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lintTypeScript)
@@ -124,7 +129,7 @@ final class ESLintPanel extends javax.swing.JPanel {
                                 .addComponent(jLabel3)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(lintRegExp, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 228, Short.MAX_VALUE)))
+                        .addGap(0, 230, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -142,7 +147,9 @@ final class ESLintPanel extends javax.swing.JPanel {
                     .addComponent(confTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(browseConfButton)
                     .addComponent(jLabel2))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(configDescriptionLabel)
+                .addGap(27, 27, 27)
                 .addComponent(lintJavascript)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lintTypeScript)
@@ -182,7 +189,7 @@ final class ESLintPanel extends javax.swing.JPanel {
     void load() {
         Preferences prefs = NbPreferences.forModule(ESLint.class);
         eslintPathTextField.setText(prefs.get(Constants.ESLINT_PATH, null));
-        confTextField.setText(prefs.get(Constants.ESLINT_CONF, Paths.get(System.getProperty("user.home"), ".eslintrc").toString()));
+        confTextField.setText(prefs.get(Constants.ESLINT_CONF, Paths.get(System.getProperty("user.home"), ".eslintrc.js").toString()));
         lintJavascript.setSelected(prefs.getBoolean(Constants.LINT_JAVASCRIPT, true));
         lintTypeScript.setSelected(prefs.getBoolean(Constants.LINT_TYPESCRIPT, true));
         lintRegExp.setText(prefs.get(Constants.LINT_REGEXP, null));
@@ -210,6 +217,7 @@ final class ESLintPanel extends javax.swing.JPanel {
     private javax.swing.JButton BrowseButton;
     private javax.swing.JButton browseConfButton;
     private javax.swing.JTextField confTextField;
+    private javax.swing.JLabel configDescriptionLabel;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JTextField eslintPathTextField;
     private javax.swing.JFileChooser fileChooser;

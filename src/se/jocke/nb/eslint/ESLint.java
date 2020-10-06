@@ -102,28 +102,28 @@ public class ESLint {
 
         if (!command.isEmpty()) {
             LOG.log(Level.INFO, "Running command {0}", command);
-            
+
             if (fileObject.isFolder()) {
                 builder.setWorkingDirectory(FileUtil.toFile(fileObject).getAbsolutePath());
-            }else{
+            } else {
                 final Project owner = FileOwnerQuery.getOwner(fileObject);
-                
+
                 if (owner != null) {
                     Project project = ProjectUtils.getInformation(owner).getProject();
-                    
+
                     if (project != null) {
                         FileObject projectDirectory = project.getProjectDirectory();
                         builder.setWorkingDirectory(projectDirectory.getPath());
                     }
                 }
             }
-            
+
             builder.setExecutable(command.trim());
 
             final String config = findConfig(fileObject);
-            
+
             LOG.log(Level.INFO, "Using config {0}", config);
-            
+
             builder.setArguments(Arrays.asList(
                     "--config",
                     config,
@@ -131,36 +131,40 @@ public class ESLint {
                     "compact",
                     fileObject.isFolder() ? "." : FileUtil.toFile(fileObject).getAbsolutePath()
             ));
-            
+
             BaseExecutionService service = BaseExecutionService.newService(new Callable<Process>() {
                 @Override
                 public Process call() throws Exception {
                     return builder.call();
                 }
             }, descriptor);
-            
+
             return service.run();
         }
-        
+
         return null;
     }
 
     public static String findConfig(FileObject fileObject) {
-
-        if (fileObject.isFolder() && fileObject.getFileObject(ESLINTRC) != null) {
-            return FileUtil.toFile(fileObject.getFileObject(".eslintrc")).getAbsolutePath();
-        }
-
-        if (!fileObject.isFolder()) {
-
-            Project project = FileOwnerQuery.getOwner(fileObject);
-
-            if (project != null && project.getProjectDirectory().getFileObject(ESLINTRC) != null) {
-                return FileUtil.toFile(project.getProjectDirectory().getFileObject(ESLINTRC)).getAbsolutePath();
-            }
-        }
-
         Preferences prefs = NbPreferences.forModule(ESLint.class);
+        String[] possibleConfigFiles = new String[]{".eslintrc.js", ".eslintrc.cjs", ".eslintrc.yaml", ".eslintrc.yml", ".eslintrc.json", ".eslintrc"};
+
+        for (String configFile : possibleConfigFiles) {
+            if (fileObject.isFolder() && fileObject.getFileObject(configFile) != null) {
+                return FileUtil.toFile(fileObject.getFileObject(configFile)).getAbsolutePath();
+            }
+
+            if (!fileObject.isFolder()) {
+                Project project = FileOwnerQuery.getOwner(fileObject);
+
+                if (project != null && project.getProjectDirectory().getFileObject(configFile) != null) {
+                    return FileUtil.toFile(project.getProjectDirectory().getFileObject(configFile)).getAbsolutePath();
+                }
+            }
+
+//            return prefs.get(Constants.ESLINT_CONF, Paths.get(System.getProperty("user.home"), configFile).toString());
+        }
+
         return prefs.get(Constants.ESLINT_CONF, Paths.get(System.getProperty("user.home"), ".eslintrc").toString());
     }
 
