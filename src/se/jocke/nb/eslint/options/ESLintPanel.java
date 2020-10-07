@@ -12,9 +12,9 @@ import se.jocke.nb.eslint.Constants;
 import se.jocke.nb.eslint.ESLint;
 
 final class ESLintPanel extends javax.swing.JPanel {
-
+    
     private final ESLintOptionsPanelController controller;
-
+    
     ESLintPanel(ESLintOptionsPanelController controller) {
         this.controller = controller;
         initComponents();
@@ -43,6 +43,7 @@ final class ESLintPanel extends javax.swing.JPanel {
         lintRegExp = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         configDescriptionLabel = new javax.swing.JLabel();
+        useProjectBasedConf = new javax.swing.JCheckBox();
 
         fileChooser.setDialogTitle(org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.fileChooser.dialogTitle")); // NOI18N
         fileChooser.setFileFilter(null);
@@ -62,8 +63,10 @@ final class ESLintPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.jLabel2.text")); // NOI18N
 
         confTextField.setText(org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.confTextField.text")); // NOI18N
+        confTextField.setEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseConfButton, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.browseConfButton.text")); // NOI18N
+        browseConfButton.setEnabled(false);
         browseConfButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseConfButtonActionPerformed(evt);
@@ -90,6 +93,14 @@ final class ESLintPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(configDescriptionLabel, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.configDescriptionLabel.text")); // NOI18N
 
+        useProjectBasedConf.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(useProjectBasedConf, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.useProjectBasedConf.text")); // NOI18N
+        useProjectBasedConf.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                useProjectBasedConfActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -98,29 +109,29 @@ final class ESLintPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addGap(16, 16, 16))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(eslintPathTextField)
-                                    .addComponent(confTextField))
+                                .addComponent(eslintPathTextField)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(BrowseButton, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
-                                    .addComponent(browseConfButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(BrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(searchButton))
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(descriptionLabel)
-                                    .addComponent(configDescriptionLabel))
+                                .addComponent(descriptionLabel)
                                 .addGap(0, 0, Short.MAX_VALUE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(16, 16, 16)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(confTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(browseConfButton, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(configDescriptionLabel)
+                                .addGap(192, 192, 192))))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lintTypeScript)
@@ -128,8 +139,9 @@ final class ESLintPanel extends javax.swing.JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel3)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(lintRegExp, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 230, Short.MAX_VALUE)))
+                                .addComponent(lintRegExp, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(useProjectBasedConf))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -142,14 +154,16 @@ final class ESLintPanel extends javax.swing.JPanel {
                     .addComponent(jLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(descriptionLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(12, 12, 12)
+                .addComponent(useProjectBasedConf)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(confTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(browseConfButton)
                     .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(configDescriptionLabel)
-                .addGap(27, 27, 27)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 62, Short.MAX_VALUE)
                 .addComponent(lintJavascript)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lintTypeScript)
@@ -157,7 +171,7 @@ final class ESLintPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lintRegExp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -174,11 +188,11 @@ final class ESLintPanel extends javax.swing.JPanel {
             confTextField.setText(fileChooser.getSelectedFile().getPath());
         }
     }//GEN-LAST:event_browseConfButtonActionPerformed
-
+    
     @NbBundle.Messages("ESLintOptionsPanel.executable.notFound=No ESLint executable found.")
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
         List<String> ngCliPaths = FileUtils.findFileOnUsersPath(ESLint.ESLINT_CLI_NAME);
-
+        
         if (ngCliPaths.isEmpty()) {
             StatusDisplayer.getDefault().setStatusText(Bundle.ESLintOptionsPanel_executable_notFound());
         } else {
@@ -186,23 +200,30 @@ final class ESLintPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_searchButtonActionPerformed
 
+    private void useProjectBasedConfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useProjectBasedConfActionPerformed
+        confTextField.setEnabled(!useProjectBasedConf.isSelected());
+        browseConfButton.setEnabled(!useProjectBasedConf.isSelected());
+    }//GEN-LAST:event_useProjectBasedConfActionPerformed
+    
     void load() {
         Preferences prefs = NbPreferences.forModule(ESLint.class);
         eslintPathTextField.setText(prefs.get(Constants.ESLINT_PATH, null));
+        useProjectBasedConf.setSelected(prefs.getBoolean(Constants.ESLINT_USE_PROJECT_BASED_CONF, true));
         confTextField.setText(prefs.get(Constants.ESLINT_CONF, Paths.get(System.getProperty("user.home"), ".eslintrc.js").toString()));
         lintJavascript.setSelected(prefs.getBoolean(Constants.LINT_JAVASCRIPT, true));
         lintTypeScript.setSelected(prefs.getBoolean(Constants.LINT_TYPESCRIPT, true));
         lintRegExp.setText(prefs.get(Constants.LINT_REGEXP, null));
     }
-
+    
     void store() {
         NbPreferences.forModule(ESLint.class).put(Constants.ESLINT_PATH, eslintPathTextField.getText());
+        NbPreferences.forModule(ESLint.class).put(Constants.ESLINT_USE_PROJECT_BASED_CONF, Boolean.toString(useProjectBasedConf.isSelected()));
         NbPreferences.forModule(ESLint.class).put(Constants.ESLINT_CONF, confTextField.getText());
-        NbPreferences.forModule(ESLint.class).put(Constants.LINT_JAVASCRIPT, Boolean.toString(this.lintJavascript.isSelected()));
-        NbPreferences.forModule(ESLint.class).put(Constants.LINT_TYPESCRIPT, Boolean.toString(this.lintTypeScript.isSelected()));
+        NbPreferences.forModule(ESLint.class).put(Constants.LINT_JAVASCRIPT, Boolean.toString(lintJavascript.isSelected()));
+        NbPreferences.forModule(ESLint.class).put(Constants.LINT_TYPESCRIPT, Boolean.toString(lintTypeScript.isSelected()));
         NbPreferences.forModule(ESLint.class).put(Constants.LINT_REGEXP, lintRegExp.getText());
     }
-
+    
     boolean valid() {
         File exec;
         try {
@@ -228,5 +249,6 @@ final class ESLintPanel extends javax.swing.JPanel {
     private javax.swing.JTextField lintRegExp;
     private javax.swing.JCheckBox lintTypeScript;
     private javax.swing.JButton searchButton;
+    private javax.swing.JCheckBox useProjectBasedConf;
     // End of variables declaration//GEN-END:variables
 }

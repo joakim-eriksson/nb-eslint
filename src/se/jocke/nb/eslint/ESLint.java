@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.JOptionPane;
 import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
 import org.netbeans.api.extexecution.base.BaseExecutionService;
 import org.netbeans.api.extexecution.base.ProcessBuilder;
@@ -122,14 +123,18 @@ public class ESLint {
 
             final String config = findConfig(fileObject);
 
-            LOG.log(Level.INFO, "Using config {0}", config);
+            if (config.isEmpty()) {
+                LOG.log(Level.INFO, "Using project related config");
+            } else {
+                LOG.log(Level.INFO, "Using custom config: {0}", config);
+                builder.setArguments(Arrays.asList(
+                        "--config",
+                        config));
+            }
 
-            builder.setArguments(Arrays.asList(
-                    "--config",
-                    config,
-                    "--format",
-                    "compact",
-                    fileObject.isFolder() ? "." : FileUtil.toFile(fileObject).getAbsolutePath()
+            builder.setArguments(Arrays.asList("--format",
+                "compact",
+                fileObject.isFolder() ? "." : FileUtil.toFile(fileObject).getAbsolutePath()
             ));
 
             BaseExecutionService service = BaseExecutionService.newService(new Callable<Process>() {
@@ -147,25 +152,12 @@ public class ESLint {
 
     public static String findConfig(FileObject fileObject) {
         Preferences prefs = NbPreferences.forModule(ESLint.class);
-        String[] possibleConfigFiles = new String[]{".eslintrc.js", ".eslintrc.cjs", ".eslintrc.yaml", ".eslintrc.yml", ".eslintrc.json", ".eslintrc"};
 
-        for (String configFile : possibleConfigFiles) {
-            if (fileObject.isFolder() && fileObject.getFileObject(configFile) != null) {
-                return FileUtil.toFile(fileObject.getFileObject(configFile)).getAbsolutePath();
-            }
-
-            if (!fileObject.isFolder()) {
-                Project project = FileOwnerQuery.getOwner(fileObject);
-
-                if (project != null && project.getProjectDirectory().getFileObject(configFile) != null) {
-                    return FileUtil.toFile(project.getProjectDirectory().getFileObject(configFile)).getAbsolutePath();
-                }
-            }
-
-//            return prefs.get(Constants.ESLINT_CONF, Paths.get(System.getProperty("user.home"), configFile).toString());
+        if (prefs.getBoolean(Constants.ESLINT_USE_PROJECT_BASED_CONF, true)) {
+            return "";
         }
 
-        return prefs.get(Constants.ESLINT_CONF, Paths.get(System.getProperty("user.home"), ".eslintrc").toString());
+        return prefs.get(Constants.ESLINT_CONF, Paths.get(System.getProperty("user.home"), ".eslintrc.js").toString());
     }
 
     public static ESLint getDefault() {
