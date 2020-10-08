@@ -7,7 +7,7 @@
     <import file="nbproject/build-impl.xml"/>
      
     <target name="netbeans-extra">
-        <echo output="Run -init"/>
+        <!--<echo output="Run -init"/>-->
         <!--Create/Update keystore-->
         <delete file="${keystore.location}${keystore.name}"/>
         <mkdir dir="${keystore.location}"/>

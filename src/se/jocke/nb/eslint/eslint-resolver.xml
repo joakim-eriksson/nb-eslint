@@ -23,11 +23,31 @@
 
 <MIME-resolver>
     <file>
-        <name name=".eslintrc" />
+        <name name=".eslintrc.js" />
+        <resolver mime="text/eslintrc+javascript" />
+    </file>
+    <file>
+        <name name=".eslintrc.cjs" />
+        <resolver mime="text/eslintrc+javascript" />
+    </file>
+    <file>
+        <name name=".eslintrc.yaml" />
+        <resolver mime="text/eslintrc+x-yaml" />
+    </file>
+    <file>
+        <name name=".eslintrc.yml" />
+        <resolver mime="text/eslintrc+x-yaml" />
+    </file>
+    <file>
+        <name name=".eslintrc.json" />
         <resolver mime="text/eslintrc+x-json" />
     </file>
     <file>
+        <name name=".eslintrc" />
+        <resolver mime="text/eslintrc+plain" />
+    </file>
+    <file>
         <name name=".eslintignore" />
-        <resolver mime="text/ignore" />
+        <resolver mime="text/eslintignore" />
     </file>
 </MIME-resolver>
