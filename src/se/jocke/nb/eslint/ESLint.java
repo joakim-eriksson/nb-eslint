@@ -1,5 +1,9 @@
 package se.jocke.nb.eslint;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
@@ -9,22 +13,27 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.Action;
 import javax.swing.JOptionPane;
 import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
 import org.netbeans.api.extexecution.base.BaseExecutionService;
 import org.netbeans.api.extexecution.base.ProcessBuilder;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.openide.ErrorManager;
+import org.openide.*;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import se.jocke.nb.eslint.error.ErrorReporter;
 import se.jocke.nb.eslint.error.LintError;
+import se.jocke.nb.eslint.options.ESLintOptionsPanelController;
 
 /**
  *
@@ -37,8 +46,6 @@ public class ESLint {
     private static final Pattern LINT_PATTERN = Pattern.compile("(.*):\\s+line\\s+(\\d+),\\s+col\\s(\\d+),\\s+(\\w*)\\s-(.*)");
 
     private static final Logger LOG = Logger.getLogger(ESLint.class.getName());
-
-    public static final String ESLINTRC = ".eslintrc";
 
     public static final String ESLINT_CLI_NAME;
 
@@ -119,6 +126,8 @@ public class ESLint {
                 }
             }
 
+            BaseExecutionService service = null;
+
             builder.setExecutable(command.trim());
 
             final String config = findConfig(fileObject);
@@ -137,10 +146,21 @@ public class ESLint {
                 fileObject.isFolder() ? "." : FileUtil.toFile(fileObject).getAbsolutePath()
             ));
 
-            BaseExecutionService service = BaseExecutionService.newService(new Callable<Process>() {
+            service = BaseExecutionService.newService(new Callable<Process>() {
                 @Override
                 public Process call() throws Exception {
-                    return builder.call();
+                    try {
+                        return builder.call();
+                    } catch (IOException err) {
+                        NotificationDisplayer.getDefault().notify("ESLint Error: Check the options", NotificationDisplayer.Priority.HIGH.getIcon(), "There is a problem while using ESLint, please check your options while clicking here. Probably the path to the ESLint CLI is not correct.", new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent arg0) {
+                                OptionsDisplayer.getDefault().open(ESLintOptionsPanelController.OPTIONS_PATH);
+                            }
+                        });
+
+                        return null;
+                    }
                 }
             }, descriptor);
 

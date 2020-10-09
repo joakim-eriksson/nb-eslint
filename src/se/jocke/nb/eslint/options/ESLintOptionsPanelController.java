@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package se.jocke.nb.eslint.options;
 
 import java.beans.PropertyChangeListener;
@@ -15,6 +10,7 @@ import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
         location = "Html5",
+        id="ESLint",
         displayName = "#AdvancedOption_DisplayName_ESLint",
         keywords = "#AdvancedOption_Keywords_ESLint",
         keywordsCategory = "Html5/ESLint"
@@ -26,6 +22,7 @@ public final class ESLintOptionsPanelController extends OptionsPanelController {
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
 
+    public static final String OPTIONS_PATH = "Html5/ESLint"; // NOI18N
 
     @Override
     public void update() {
