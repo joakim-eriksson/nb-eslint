@@ -24,6 +24,8 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
+import se.jocke.nb.eslint.Constants;
 import se.jocke.nb.eslint.ESLint;
 import se.jocke.nb.eslint.error.ErrorReporter;
 import se.jocke.nb.eslint.error.LintError;
@@ -58,66 +60,64 @@ public class ESLintTaskScanner extends PushTaskScanner {
 
     @Override
     public void setScope(final TaskScanningScope scope, final Callback callback) {
-
-        for (Stoppable stoppable : listeners) {
-            stoppable.stop();
-        }
-
-        listeners.clear();
-
-        if (this.callback != null) {
-            this.callback.clearAllTasks();
-        }
-
-        if (callback == null) {
-            LOG.warning("Callback null!!!!!");
-            return;
-        }
-
-        this.callback = callback;
-
-        Collection<? extends Project> projects = scope.getLookup().lookupAll(Project.class);
-
-        FileObject file = scope.getLookup().lookup(FileObject.class);
-
-        callback.started();
-
-        Future<Integer> future = null;
-
-        if (!projects.isEmpty()) {
-
-            for (Project project : projects) {
-                JSFileRecursiveListener listener = new JSFileRecursiveListener(project.getProjectDirectory());
-                future = ESLint.getDefault().verify(project.getProjectDirectory(), new SimpleErrorReporter());
-                listeners.add(listener);
-                listener.start();
+        if (NbPreferences.forModule(ESLint.class).getBoolean(Constants.IS_ESLINT_ENABLED, false)) {
+            for (Stoppable stoppable : listeners) {
+                stoppable.stop();
             }
 
-        } else if (isLintedFile(file)) {
-            Project project = FileOwnerQuery.getOwner(file);
-            if (project != null) {
-                ESLintIgnore ignore = ESLintIgnore.get(project.getProjectDirectory());
-                if (!ignore.isIgnored(file)) {
-                    JSFileListener listener = new JSFileListener(file);
-                    future = ESLint.getDefault().verify(file, new SimpleErrorReporter());
+            listeners.clear();
+
+            if (this.callback != null) {
+                this.callback.clearAllTasks();
+            }
+
+            if (callback == null) {
+                LOG.warning("Callback null!!!!!");
+                return;
+            }
+
+            this.callback = callback;
+
+            Collection<? extends Project> projects = scope.getLookup().lookupAll(Project.class);
+
+            FileObject file = scope.getLookup().lookup(FileObject.class);
+
+            callback.started();
+
+            Future<Integer> future = null;
+
+            if (!projects.isEmpty()) {
+                for (Project project : projects) {
+                    JSFileRecursiveListener listener = new JSFileRecursiveListener(project.getProjectDirectory());
+                    future = ESLint.getDefault().verify(project.getProjectDirectory(), new SimpleErrorReporter());
                     listeners.add(listener);
                     listener.start();
                 }
-            } else {
-                LOG.log(Level.WARNING, "Project for file not found {0}", file);
+            } else if (isLintedFile(file)) {
+                Project project = FileOwnerQuery.getOwner(file);
+                if (project != null) {
+                    ESLintIgnore ignore = ESLintIgnore.get(project.getProjectDirectory());
+                    if (!ignore.isIgnored(file)) {
+                        JSFileListener listener = new JSFileListener(file);
+                        future = ESLint.getDefault().verify(file, new SimpleErrorReporter());
+                        listeners.add(listener);
+                        listener.start();
+                    }
+                } else {
+                    LOG.log(Level.WARNING, "Project for file not found {0}", file);
+                }
             }
-        }
 
-        if (future != null) {
-            try {
-                future.get();
-            } catch (InterruptedException | ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
+            if (future != null) {
+                try {
+                    future.get();
+                } catch (InterruptedException | ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
+
+            callback.finished();
         }
-
-        callback.finished();
-
     }
 
     private class SimpleErrorReporter implements ErrorReporter {
@@ -152,7 +152,6 @@ public class ESLintTaskScanner extends PushTaskScanner {
     }
 
     private class JSFileRecursiveListener extends FileChangeAdapter implements Stoppable {
-
         private final FileObject root;
 
         private final ESLintIgnore ignore;
@@ -188,7 +187,6 @@ public class ESLintTaskScanner extends PushTaskScanner {
     }
 
     private class JSFileListener extends FileChangeAdapter implements Stoppable {
-
         private final FileObject file;
 
         public JSFileListener(FileObject file) {

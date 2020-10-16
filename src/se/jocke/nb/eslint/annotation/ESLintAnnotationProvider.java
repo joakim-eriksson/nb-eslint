@@ -19,7 +19,9 @@ import org.openide.text.Annotation;
 import org.openide.text.AnnotationProvider;
 import org.openide.text.Line;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
+import se.jocke.nb.eslint.Constants;
 import se.jocke.nb.eslint.ESLint;
 import se.jocke.nb.eslint.error.ErrorReporter;
 import se.jocke.nb.eslint.error.LintError;
@@ -31,7 +33,6 @@ import se.jocke.nb.eslint.options.OptionsUtil;
  */
 @ServiceProvider(service = AnnotationProvider.class)
 public class ESLintAnnotationProvider extends FileChangeAdapter implements AnnotationProvider {
-
     private static final Map<FileObject, Set<Annotation>> MAPPING = new HashMap<>();
 
     private static final Logger LOG = Logger.getLogger(ESLintAnnotationProvider.class.getName());
@@ -42,62 +43,63 @@ public class ESLintAnnotationProvider extends FileChangeAdapter implements Annot
     }
 
     public void apply(final FileObject fileObject) {
-        if (OptionsUtil.isLintedFile(fileObject)) {
-            LOG.log(Level.INFO, "Start index file {0}", fileObject.getMIMEType());
+        if (NbPreferences.forModule(ESLint.class).getBoolean(Constants.IS_ESLINT_ENABLED, false)) {
+            if (OptionsUtil.isLintedFile(fileObject)) {
+                LOG.log(Level.INFO, "Start index file {0}", fileObject.getMIMEType());
 
-            if (MAPPING.containsKey(fileObject)) {
-                detachAll(fileObject);
+                if (MAPPING.containsKey(fileObject)) {
+                    detachAll(fileObject);
 
-            } else {
-                MAPPING.put(fileObject, new HashSet<Annotation>());
-                fileObject.addFileChangeListener(this);
-            }
-
-            try {
-                final DataObject dataObject = DataObject.find(fileObject);
-                final LineCookie lineCookie = dataObject.getLookup().lookup(LineCookie.class);
-
-                if (lineCookie == null) {
-                    LOG.info("Line cockie null");
-                    return;
+                } else {
+                    MAPPING.put(fileObject, new HashSet<Annotation>());
+                    fileObject.addFileChangeListener(this);
                 }
 
-                ESLint.getDefault().verify(fileObject, new ErrorReporter() {
+                try {
+                    final DataObject dataObject = DataObject.find(fileObject);
+                    final LineCookie lineCookie = dataObject.getLookup().lookup(LineCookie.class);
 
-                    @Override
-                    public void handle(LintError error) {
-                        Line currentLine = lineCookie.getLineSet().getCurrent(error.getLine() - 1);
-                        Line.Part currentPartLine = currentLine.createPart(error.getCol() - 1, 1);
-                        final ESLintAnnotation annotation = ESLintAnnotation.create(
-                                ESLintAnnotation.Type.valueOf(error.getType().toUpperCase()),
-                                error.getMessage(),
-                                error.getLine(),
-                                error.getCol(),
-                                currentPartLine);
+                    if (lineCookie == null) {
+                        LOG.info("Line cookie null");
 
-                        MAPPING.get(fileObject).add(annotation);
+                        return;
+                    }
 
-                        annotation.addPropertyChangeListener(new PropertyChangeListener() {
-                            @Override
-                            public void propertyChange(PropertyChangeEvent evt) {
-                                if (ESLintAnnotation.ATTACHED.equals(evt.getPropertyName())) {
-                                    annotation.removePropertyChangeListener(this);
-                                    if (MAPPING.containsKey(fileObject)) {
-                                        MAPPING.get(fileObject).remove(annotation);
+                    ESLint.getDefault().verify(fileObject, new ErrorReporter() {
+                        @Override
+                        public void handle(LintError error) {
+                            Line currentLine = lineCookie.getLineSet().getCurrent(error.getLine() - 1);
+                            Line.Part currentPartLine = currentLine.createPart(error.getCol() - 1, 1);
+                            final ESLintAnnotation annotation = ESLintAnnotation.create(
+                                    ESLintAnnotation.Type.valueOf(error.getType().toUpperCase()),
+                                    error.getMessage(),
+                                    error.getLine(),
+                                    error.getCol(),
+                                    currentPartLine);
+
+                            MAPPING.get(fileObject).add(annotation);
+
+                            annotation.addPropertyChangeListener(new PropertyChangeListener() {
+                                @Override
+                                public void propertyChange(PropertyChangeEvent evt) {
+                                    if (ESLintAnnotation.ATTACHED.equals(evt.getPropertyName())) {
+                                        annotation.removePropertyChangeListener(this);
+                                        if (MAPPING.containsKey(fileObject)) {
+                                            MAPPING.get(fileObject).remove(annotation);
+                                        }
                                     }
                                 }
-                            }
-                        });
-                    }
+                            });
+                        }
 
-                    @Override
-                    public void done() {
-                        LOG.log(Level.FINE, "Scannig done of {0}", fileObject.getName());
-                    }
-                });
-
-            } catch (DataObjectNotFoundException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+                        @Override
+                        public void done() {
+                            LOG.log(Level.FINE, "Scannig done of {0}", fileObject.getName());
+                        }
+                    });
+                } catch (DataObjectNotFoundException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+                }
             }
         }
     }
