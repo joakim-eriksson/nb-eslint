@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
+import javax.swing.JRadioButton;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -12,12 +13,15 @@ import se.jocke.nb.eslint.Constants;
 import se.jocke.nb.eslint.ESLint;
 
 final class ESLintPanel extends javax.swing.JPanel {
-    
     private final ESLintOptionsPanelController controller;
-    
+    private boolean isEslintEnabled = false;
+
     ESLintPanel(ESLintOptionsPanelController controller) {
         this.controller = controller;
+
         initComponents();
+
+        this.eslintAutomaticConfig.setVisible(false);
         // TODO listen to changes in form fields and call controller.changed()
     }
 
@@ -30,37 +34,43 @@ final class ESLintPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         fileChooser = new javax.swing.JFileChooser();
-        jLabel1 = new javax.swing.JLabel();
+        eslintRadioButtonGroup = new javax.swing.ButtonGroup();
+        eslintCliLabel = new javax.swing.JLabel();
         eslintPathTextField = new javax.swing.JTextField();
-        BrowseButton = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
+        eslintPathBrowseButton = new javax.swing.JButton();
+        eslintConfigLabel = new javax.swing.JLabel();
         confTextField = new javax.swing.JTextField();
         browseConfButton = new javax.swing.JButton();
-        searchButton = new javax.swing.JButton();
-        descriptionLabel = new javax.swing.JLabel();
-        lintJavascript = new javax.swing.JCheckBox();
-        lintTypeScript = new javax.swing.JCheckBox();
+        eslintPathSearchButton = new javax.swing.JButton();
+        eslintPathDescriptionLabel = new javax.swing.JLabel();
         lintRegExp = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
+        eslintFileRegexLabel = new javax.swing.JLabel();
         configDescriptionLabel = new javax.swing.JLabel();
-        useProjectBasedConf = new javax.swing.JCheckBox();
+        useCustomConfig = new javax.swing.JCheckBox();
+        eslintEnable = new javax.swing.JRadioButton();
+        eslintManualConfig = new javax.swing.JRadioButton();
+        eslintAutomaticConfig = new javax.swing.JRadioButton();
 
         fileChooser.setDialogTitle(org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.fileChooser.dialogTitle")); // NOI18N
         fileChooser.setFileFilter(null);
         fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_AND_DIRECTORIES);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(eslintCliLabel, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.eslintCliLabel.text")); // NOI18N
+        eslintCliLabel.setEnabled(false);
 
         eslintPathTextField.setText(org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.eslintPathTextField.text")); // NOI18N
+        eslintPathTextField.setEnabled(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(BrowseButton, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.BrowseButton.text")); // NOI18N
-        BrowseButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(eslintPathBrowseButton, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.eslintPathBrowseButton.text")); // NOI18N
+        eslintPathBrowseButton.setEnabled(false);
+        eslintPathBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                BrowseButtonActionPerformed(evt);
+                eslintPathBrowseButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(eslintConfigLabel, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.eslintConfigLabel.text")); // NOI18N
+        eslintConfigLabel.setEnabled(false);
 
         confTextField.setText(org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.confTextField.text")); // NOI18N
         confTextField.setEnabled(false);
@@ -73,31 +83,59 @@ final class ESLintPanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(searchButton, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.searchButton.text")); // NOI18N
-        searchButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(eslintPathSearchButton, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.eslintPathSearchButton.text")); // NOI18N
+        eslintPathSearchButton.setEnabled(false);
+        eslintPathSearchButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchButtonActionPerformed(evt);
+                eslintPathSearchButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.descriptionLabel.text")); // NOI18N
-
-        lintJavascript.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(lintJavascript, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.lintJavascript.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(lintTypeScript, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.lintTypeScript.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(eslintPathDescriptionLabel, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.eslintPathDescriptionLabel.text")); // NOI18N
+        eslintPathDescriptionLabel.setEnabled(false);
 
         lintRegExp.setText(org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.lintRegExp.text")); // NOI18N
+        lintRegExp.setEnabled(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(eslintFileRegexLabel, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.eslintFileRegexLabel.text")); // NOI18N
+        eslintFileRegexLabel.setEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(configDescriptionLabel, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.configDescriptionLabel.text")); // NOI18N
+        configDescriptionLabel.setEnabled(false);
 
-        useProjectBasedConf.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(useProjectBasedConf, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.useProjectBasedConf.text")); // NOI18N
-        useProjectBasedConf.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(useCustomConfig, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.useCustomConfig.text")); // NOI18N
+        useCustomConfig.setEnabled(false);
+        useCustomConfig.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                useProjectBasedConfActionPerformed(evt);
+                useCustomConfigActionPerformed(evt);
+            }
+        });
+
+        eslintRadioButtonGroup.add(eslintEnable);
+        eslintEnable.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(eslintEnable, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.eslintEnable.text")); // NOI18N
+        eslintEnable.setActionCommand(org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.eslintEnable.actionCommand")); // NOI18N
+        eslintEnable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                eslintRadioButtonItemStateChanged(evt);
+            }
+        });
+
+        eslintRadioButtonGroup.add(eslintManualConfig);
+        org.openide.awt.Mnemonics.setLocalizedText(eslintManualConfig, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.eslintManualConfig.text")); // NOI18N
+        eslintManualConfig.setActionCommand(org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.eslintManualConfig.actionCommand")); // NOI18N
+        eslintManualConfig.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                eslintRadioButtonItemStateChanged(evt);
+            }
+        });
+
+        eslintRadioButtonGroup.add(eslintAutomaticConfig);
+        org.openide.awt.Mnemonics.setLocalizedText(eslintAutomaticConfig, org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.eslintAutomaticConfig.text")); // NOI18N
+        eslintAutomaticConfig.setActionCommand(org.openide.util.NbBundle.getMessage(ESLintPanel.class, "ESLintPanel.eslintAutomaticConfig.actionCommand")); // NOI18N
+        eslintAutomaticConfig.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                eslintRadioButtonItemStateChanged(evt);
             }
         });
 
@@ -106,81 +144,84 @@ final class ESLintPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(eslintPathTextField)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(BrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(searchButton))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(descriptionLabel)
-                                .addGap(0, 0, Short.MAX_VALUE))))
+                            .addComponent(eslintEnable)
+                            .addComponent(eslintManualConfig)
+                            .addComponent(eslintAutomaticConfig, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(16, 16, 16)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGap(15, 15, 15)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(confTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(browseConfButton, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(eslintConfigLabel)
+                                .addGap(16, 16, 16)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(configDescriptionLabel)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(confTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 539, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(browseConfButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(configDescriptionLabel)
-                                .addGap(192, 192, 192))))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lintTypeScript)
-                            .addComponent(lintJavascript)
+                                .addComponent(eslintCliLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(eslintPathDescriptionLabel)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(1, 1, 1)
+                                        .addComponent(eslintPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 536, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(eslintPathBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(eslintPathSearchButton))))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel3)
+                                .addComponent(eslintFileRegexLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(lintRegExp, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(useProjectBasedConf))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                            .addComponent(useCustomConfig))))
+                .addContainerGap(17, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(eslintEnable)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(eslintAutomaticConfig)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(eslintManualConfig)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(eslintPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(BrowseButton)
-                    .addComponent(searchButton)
-                    .addComponent(jLabel1))
+                    .addComponent(eslintPathBrowseButton)
+                    .addComponent(eslintPathSearchButton)
+                    .addComponent(eslintCliLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(descriptionLabel)
+                .addComponent(eslintPathDescriptionLabel)
                 .addGap(12, 12, 12)
-                .addComponent(useProjectBasedConf)
+                .addComponent(useCustomConfig)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(confTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(browseConfButton)
-                    .addComponent(jLabel2))
+                    .addComponent(eslintConfigLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(configDescriptionLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 62, Short.MAX_VALUE)
-                .addComponent(lintJavascript)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(lintTypeScript)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lintRegExp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3))
-                .addContainerGap())
+                    .addComponent(eslintFileRegexLabel))
+                .addContainerGap(83, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void BrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BrowseButtonActionPerformed
+    private void eslintPathBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eslintPathBrowseButtonActionPerformed
         int returnVal = fileChooser.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             eslintPathTextField.setText(fileChooser.getSelectedFile().getPath());
         }
-    }//GEN-LAST:event_BrowseButtonActionPerformed
+    }//GEN-LAST:event_eslintPathBrowseButtonActionPerformed
 
     private void browseConfButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseConfButtonActionPerformed
         int returnVal = fileChooser.showOpenDialog(this);
@@ -188,42 +229,60 @@ final class ESLintPanel extends javax.swing.JPanel {
             confTextField.setText(fileChooser.getSelectedFile().getPath());
         }
     }//GEN-LAST:event_browseConfButtonActionPerformed
-    
+
     @NbBundle.Messages("ESLintOptionsPanel.executable.notFound=No ESLint executable found.")
-    private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
+    private void eslintPathSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eslintPathSearchButtonActionPerformed
         List<String> ngCliPaths = FileUtils.findFileOnUsersPath(ESLint.ESLINT_CLI_NAME);
-        
+
         if (ngCliPaths.isEmpty()) {
             StatusDisplayer.getDefault().setStatusText(Bundle.ESLintOptionsPanel_executable_notFound());
         } else {
             eslintPathTextField.setText(ngCliPaths.get(0));
         }
-    }//GEN-LAST:event_searchButtonActionPerformed
+    }//GEN-LAST:event_eslintPathSearchButtonActionPerformed
 
-    private void useProjectBasedConfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useProjectBasedConfActionPerformed
-        confTextField.setEnabled(!useProjectBasedConf.isSelected());
-        browseConfButton.setEnabled(!useProjectBasedConf.isSelected());
-    }//GEN-LAST:event_useProjectBasedConfActionPerformed
-    
+    private void useCustomConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useCustomConfigActionPerformed
+        confTextField.setEnabled(useCustomConfig.isSelected());
+        eslintConfigLabel.setEnabled(useCustomConfig.isSelected());
+        configDescriptionLabel.setEnabled(useCustomConfig.isSelected());
+        browseConfButton.setEnabled(useCustomConfig.isSelected());
+    }//GEN-LAST:event_useCustomConfigActionPerformed
+
+    private void eslintRadioButtonItemStateChanged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_eslintRadioButtonItemStateChanged
+        String actionCommand = ((JRadioButton) evt.getSource()).getActionCommand();
+
+        toggleElements(actionCommand.equals("manual"));
+    }//GEN-LAST:event_eslintRadioButtonItemStateChanged
+
+    private void toggleElements(boolean toggle) {
+        eslintCliLabel.setEnabled(toggle);
+        eslintPathTextField.setEnabled(toggle);
+        eslintPathBrowseButton.setEnabled(toggle);
+        eslintPathSearchButton.setEnabled(toggle);
+        eslintPathDescriptionLabel.setEnabled(toggle);
+        useCustomConfig.setEnabled(toggle);
+        eslintFileRegexLabel.setEnabled(toggle);
+        lintRegExp.setEnabled(toggle);
+        isEslintEnabled = toggle;
+    }
+
     void load() {
         Preferences prefs = NbPreferences.forModule(ESLint.class);
+
         eslintPathTextField.setText(prefs.get(Constants.ESLINT_PATH, null));
-        useProjectBasedConf.setSelected(prefs.getBoolean(Constants.ESLINT_USE_PROJECT_BASED_CONF, true));
+        useCustomConfig.setSelected(prefs.getBoolean(Constants.ESLINT_USE_CUSTOM_CONF, false));
         confTextField.setText(prefs.get(Constants.ESLINT_CONF, Paths.get(System.getProperty("user.home"), ".eslintrc.js").toString()));
-        lintJavascript.setSelected(prefs.getBoolean(Constants.LINT_JAVASCRIPT, true));
-        lintTypeScript.setSelected(prefs.getBoolean(Constants.LINT_TYPESCRIPT, true));
-        lintRegExp.setText(prefs.get(Constants.LINT_REGEXP, null));
+        lintRegExp.setText(prefs.get(Constants.LINT_REGEXP, ".*?\\.[j,t]sx?$|.*?\\.vue$"));
     }
-    
+
     void store() {
         NbPreferences.forModule(ESLint.class).put(Constants.ESLINT_PATH, eslintPathTextField.getText());
-        NbPreferences.forModule(ESLint.class).put(Constants.ESLINT_USE_PROJECT_BASED_CONF, Boolean.toString(useProjectBasedConf.isSelected()));
+        NbPreferences.forModule(ESLint.class).put(Constants.ESLINT_USE_CUSTOM_CONF, Boolean.toString(useCustomConfig.isSelected()));
         NbPreferences.forModule(ESLint.class).put(Constants.ESLINT_CONF, confTextField.getText());
-        NbPreferences.forModule(ESLint.class).put(Constants.LINT_JAVASCRIPT, Boolean.toString(lintJavascript.isSelected()));
-        NbPreferences.forModule(ESLint.class).put(Constants.LINT_TYPESCRIPT, Boolean.toString(lintTypeScript.isSelected()));
         NbPreferences.forModule(ESLint.class).put(Constants.LINT_REGEXP, lintRegExp.getText());
+        NbPreferences.forModule(ESLint.class).put(Constants.IS_ESLINT_ENABLED, Boolean.toString(isEslintEnabled));
     }
-    
+
     boolean valid() {
         File exec;
         try {
@@ -235,20 +294,22 @@ final class ESLintPanel extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton BrowseButton;
     private javax.swing.JButton browseConfButton;
     private javax.swing.JTextField confTextField;
     private javax.swing.JLabel configDescriptionLabel;
-    private javax.swing.JLabel descriptionLabel;
+    private javax.swing.JRadioButton eslintAutomaticConfig;
+    private javax.swing.JLabel eslintCliLabel;
+    private javax.swing.JLabel eslintConfigLabel;
+    private javax.swing.JRadioButton eslintEnable;
+    private javax.swing.JLabel eslintFileRegexLabel;
+    private javax.swing.JRadioButton eslintManualConfig;
+    private javax.swing.JButton eslintPathBrowseButton;
+    private javax.swing.JLabel eslintPathDescriptionLabel;
+    private javax.swing.JButton eslintPathSearchButton;
     private javax.swing.JTextField eslintPathTextField;
+    private javax.swing.ButtonGroup eslintRadioButtonGroup;
     private javax.swing.JFileChooser fileChooser;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JCheckBox lintJavascript;
     private javax.swing.JTextField lintRegExp;
-    private javax.swing.JCheckBox lintTypeScript;
-    private javax.swing.JButton searchButton;
-    private javax.swing.JCheckBox useProjectBasedConf;
+    private javax.swing.JCheckBox useCustomConfig;
     // End of variables declaration//GEN-END:variables
 }
