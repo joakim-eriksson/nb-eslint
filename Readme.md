@@ -1,6 +1,6 @@
 # nb-eslint
 
-![nb-eslint-logo](./images/nb-eslint-logo.jpg)
+![nb-eslint-logo](./images/nb-eslint-logo.png)
 
 ![License](https://img.shields.io/github/license/joakim-eriksson/nb-eslint)
 ![Release](https://img.shields.io/github/release/joakim-eriksson/nb-eslint)
