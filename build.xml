@@ -13,6 +13,7 @@
         <mkdir dir="${keystore.location}"/>
         <genkey alias="${keystore.alias}" storepass="${keystore.password}"
                 dname="${keystore.dname}"
+                keyalg="RSA"
                 keystore="${keystore.location}${keystore.name}"/>
         <!--Update keystore info in projects-->
         <antcall target="update-keystore-info"/>
