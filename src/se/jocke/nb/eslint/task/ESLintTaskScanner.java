@@ -134,7 +134,7 @@ public class ESLintTaskScanner extends PushTaskScanner {
             if (!tasks.containsKey(fileObject)) {
                 tasks.put(fileObject, new ArrayList<Task>());
             }
-            tasks.get(fileObject).add(Task.create(fileObject, ERROR_TYPE_TO_GROUP_MAP.get(error.getType().toUpperCase()), error.getMessage(), error.getLine()));
+            tasks.get(fileObject).add(Task.create(fileObject, ERROR_TYPE_TO_GROUP_MAP.get(error.getSeverity()), error.getMessage(), error.getLine()));
         }
 
         @Override

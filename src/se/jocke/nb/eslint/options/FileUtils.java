@@ -17,7 +17,6 @@ import org.openide.util.Utilities;
 
 // XXX copied from PHP
 public final class FileUtils {
-
     private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
 
     private static final boolean IS_WINDOWS = Utilities.isWindows();
@@ -62,9 +61,9 @@ public final class FileUtils {
             return Collections.<String>emptyList();
         }
         // on linux there are usually duplicities in PATH
-        Set<String> dirs = new LinkedHashSet<String>(Arrays.asList(path.split(File.pathSeparator)));
+        Set<String> dirs = new LinkedHashSet<>(Arrays.asList(path.split(File.pathSeparator)));
         LOGGER.log(Level.FINE, "PATH dirs: {0}", dirs);
-        List<String> found = new ArrayList<String>(dirs.size() * filenames.length);
+        List<String> found = new ArrayList<>(dirs.size() * filenames.length);
         for (String filename : filenames) {
             Parameters.notNull("filename", filename); // NOI18N
             for (String dir : dirs) {
@@ -130,7 +129,7 @@ public final class FileUtils {
     })
     @CheckForNull
     public static String validateFile(String source, String filePath, boolean writable) {
-        if (!StringUtils.hasText(filePath)) {
+        if (!hasText(filePath)) {
             return Bundle.FileUtils_validateFile_missing(source);
         }
 
@@ -168,5 +167,9 @@ public final class FileUtils {
             sb.append("sh"); // NOI18N
         }
         return sb.toString();
+    }
+    
+    public static boolean hasText(String input) {
+        return input != null && !input.trim().isEmpty();
     }
 }
