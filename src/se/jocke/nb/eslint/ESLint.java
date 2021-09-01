@@ -10,8 +10,10 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
 import org.netbeans.api.extexecution.base.BaseExecutionService;
 import org.netbeans.api.extexecution.base.ProcessBuilder;
@@ -25,6 +27,7 @@ import org.openide.*;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import se.jocke.nb.eslint.error.ErrorReporter;
@@ -36,13 +39,8 @@ import se.jocke.nb.eslint.options.ESLintOptionsPanelController;
  * @author jocke
  */
 public class ESLint {
-
     private static final ESLint ES_LINT = new ESLint();
-
-    private static final Pattern LINT_PATTERN = Pattern.compile("(.*):\\s+line\\s+(\\d+),\\s+col\\s(\\d+),\\s+(\\w*)\\s-(.*)");
-
     private static final Logger LOG = Logger.getLogger(ESLint.class.getName());
-
     public static final String ESLINT_CLI_NAME;
 
     static {
@@ -53,7 +51,7 @@ public class ESLint {
         }
     }
 
-    public Future<Integer> verify(FileObject fileObject, final ErrorReporter reporter) {
+    public Future<Integer> verify(final FileObject fileObject, final ErrorReporter reporter) {
         if (NbPreferences.forModule(ESLint.class).getBoolean(Constants.IS_ESLINT_ENABLED, false)) {
             final Preferences prefs = NbPreferences.forModule(ESLint.class);
 
@@ -79,16 +77,29 @@ public class ESLint {
                     return InputProcessors.bridge(new LineProcessorAdapter() {
                         @Override
                         public void processLine(String string) {
-                            Matcher matcher = LINT_PATTERN.matcher(string);
-                            if (matcher.matches()) {
-                                String file = matcher.group(1);
-                                int line = Integer.parseInt(matcher.group(2));
-                                int col = Integer.parseInt(matcher.group(3));
-                                String type = matcher.group(4);
-                                String message = matcher.group(5);
-                                reporter.handle(new LintError(file, line, col, type, message));
-                            } else {
-                                LOG.log(Level.FINE, "Line {0}", string);
+                            try {
+                                final JSONParser jsonParser = new JSONParser();
+                                final JSONArray jsonArray = (JSONArray) jsonParser.parse(string);
+
+                                JSONObject lintObject = (JSONObject) jsonArray.get(0);
+                                String filePath = lintObject.get("filePath").toString();
+
+                                if (filePath.equals(FileUtil.toFile(fileObject).getAbsolutePath())) {
+                                    JSONArray messages = (JSONArray) lintObject.get("messages");
+
+                                    for (Object lintMessage : messages) {
+                                        String file = filePath;
+                                        int line = Integer.parseInt(((JSONObject) lintMessage).get("line").toString());
+                                        int columnStart = Integer.parseInt(((JSONObject) lintMessage).get("column").toString());
+                                        int columnEnd = Integer.parseInt(((JSONObject) lintMessage).get("endColumn").toString());
+                                        String message = ((JSONObject) lintMessage).get("message").toString();
+                                        int severity = Integer.parseInt(((JSONObject) lintMessage).get("severity").toString());
+
+                                        reporter.handle(new LintError(file, line, columnStart, columnEnd, severity, message));
+                                    }
+                                }
+                            } catch (ParseException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
                         }
 
@@ -105,8 +116,6 @@ public class ESLint {
             final ProcessBuilder builder = ProcessBuilder.getLocal();
 
             if (!command.isEmpty()) {
-                LOG.log(Level.INFO, "Running command {0}", command);
-
                 if (fileObject.isFolder()) {
                     builder.setWorkingDirectory(FileUtil.toFile(fileObject).getAbsolutePath());
                 } else {
@@ -138,9 +147,11 @@ public class ESLint {
                 }
 
                 builder.setArguments(Arrays.asList("--format",
-                        "compact",
+                        "json",
                         fileObject.isFolder() ? "." : FileUtil.toFile(fileObject).getAbsolutePath()
                 ));
+
+                LOG.log(Level.INFO, "Running command {0}", command);
 
                 service = BaseExecutionService.newService(new Callable<Process>() {
                     @Override

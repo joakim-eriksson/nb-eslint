@@ -3,11 +3,14 @@
 <filesystem>
     <folder name="Editors">
         <folder name="text">
-            <folder name="javascript"/>	
+            <folder name="javascript"/>
+        </folder>
+        <folder name="application">
+            <folder name="x-typescript"/>
         </folder>
         <folder name="AnnotationTypes">
-            <file name="se-jocke-nb-eslint-JSLintErrorAnnotation.xml" url="JSLintErrorAnnotation.xml"/>
-            <file name="se-jocke-nb-eslint-JSLintWarnAnnotation.xml" url="JSLintWarnAnnotation.xml"/>
+            <file name="se-jocke-nb-eslint-ESLintErrorAnnotation.xml" url="ESLintErrorAnnotation.xml"/>
+            <file name="se-jocke-nb-eslint-ESLintWarnAnnotation.xml" url="ESLintWarnAnnotation.xml"/>
         </folder>
     </folder>
     <folder name="TaskList">

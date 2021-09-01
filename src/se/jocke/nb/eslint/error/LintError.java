@@ -8,15 +8,17 @@ public class LintError {
 
     private final String file;
     private final int line;
-    private final int col;
-    private final String type;
+    private final int startColumn;
+    private final int endColumn;
+    private final int severity; // HINT: 0 = off, 1 = warning, 2 = error
     private final String message;
 
-    public LintError(String file, int line, int col, String type, String message) {
+    public LintError(String file, int line, int startCol, int endCol, int severity, String message) {
         this.file = file;
         this.line = line;
-        this.col = col;
-        this.type = type;
+        this.startColumn = startCol;
+        this.endColumn = endCol;
+        this.severity = severity;
         this.message = message;
     }
 
@@ -28,16 +30,19 @@ public class LintError {
         return line;
     }
 
-    public int getCol() {
-        return col;
+    public int getStartCol() {
+        return startColumn;
+    }
+    
+    public int getEndCol() {
+        return endColumn;
     }
 
-    public String getType() {
-        return type;
+    public int getSeverity() {
+        return severity;
     }
 
     public String getMessage() {
         return message;
     }
-    
 }

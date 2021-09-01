@@ -34,7 +34,6 @@ import se.jocke.nb.eslint.options.OptionsUtil;
 @ServiceProvider(service = AnnotationProvider.class)
 public class ESLintAnnotationProvider extends FileChangeAdapter implements AnnotationProvider {
     private static final Map<FileObject, Set<Annotation>> MAPPING = new HashMap<>();
-
     private static final Logger LOG = Logger.getLogger(ESLintAnnotationProvider.class.getName());
 
     @Override
@@ -69,12 +68,14 @@ public class ESLintAnnotationProvider extends FileChangeAdapter implements Annot
                         @Override
                         public void handle(LintError error) {
                             Line currentLine = lineCookie.getLineSet().getCurrent(error.getLine() - 1);
-                            Line.Part currentPartLine = currentLine.createPart(error.getCol() - 1, 1);
+                            Line.Part currentPartLine = currentLine.createPart(error.getStartCol() - 1, error.getEndCol() - error.getStartCol());
+
                             final ESLintAnnotation annotation = ESLintAnnotation.create(
-                                    ESLintAnnotation.Type.valueOf(error.getType().toUpperCase()),
+                                    ESLintAnnotation.Type.get(error.getSeverity()),
                                     error.getMessage(),
                                     error.getLine(),
-                                    error.getCol(),
+                                    error.getStartCol(),
+                                    error.getEndCol(),
                                     currentPartLine);
 
                             MAPPING.get(fileObject).add(annotation);

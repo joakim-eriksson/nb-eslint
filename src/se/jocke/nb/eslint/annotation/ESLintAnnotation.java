@@ -2,51 +2,62 @@ package se.jocke.nb.eslint.annotation;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import org.openide.text.Annotatable;
+import org.openide.text.Annotation;
 import org.openide.text.Line;
 
 /**
  *
  * @author jocke
  */
-public final class ESLintAnnotation extends org.openide.text.Annotation implements PropertyChangeListener {
+public final class ESLintAnnotation extends Annotation implements PropertyChangeListener {
 
     public static final String ATTACHED = "attached";
-    private final Type type;
+    private final String type;
     private final String reason;
     private final int line;
-    private final int col;
+    private final int startCol;
+    private final int endCol;
     private final Line.Part part;
 
-    public enum Type {
-        ERROR, WARNING
-    }
+    public static Map<Integer, String> Type = new HashMap<Integer, String>() {
+        {
+            put(1, "WARNING");
+            put(2, "ERROR");
+        }
+    };
 
     private boolean attached = false;
 
-    private ESLintAnnotation(Type type, String reason, int line, int col, Line.Part part) {
+    private ESLintAnnotation(String type, String reason, int line, int startCol, int endCol, Line.Part part) {
+        super();
+
         this.type = type;
         this.reason = reason;
         this.line = line;
-        this.col = col;
+        this.startCol = startCol;
+        this.endCol = endCol;
         this.part = part;
     }
 
-    public static ESLintAnnotation create(Type type, String reason, int line, int col, Line.Part part) {
-        final ESLintAnnotation annotation = new ESLintAnnotation(type, reason, line, col, part);
+    public static ESLintAnnotation create(String type, String reason, int line, int startCol, int endCol, Line.Part part) {
+        final ESLintAnnotation annotation = new ESLintAnnotation(type, reason, line, startCol, endCol, part);
         annotation.attach(part);
         part.addPropertyChangeListener(annotation);
+
         return annotation;
     }
 
     @Override
     public String getAnnotationType() {
         switch (type) {
-            case ERROR:
-                return "se-jocke-nb-eslint-jslinterrorannotation";
-            case WARNING:
-                return "se-jocke-nb-eslint-jslintwarnannotation";
+            case "WARNING":
+                return "se-jocke-nb-eslint-eslintwarnannotation";
+            case "ERROR":
+                return "se-jocke-nb-eslint-eslinterrorannotation";
             default:
                 throw new AssertionError();
         }
@@ -54,7 +65,7 @@ public final class ESLintAnnotation extends org.openide.text.Annotation implemen
 
     @Override
     public String getShortDescription() {
-        return reason + " (" + "Column: " + col + ")";
+        return reason + " (" + "Column: " + startCol + ")";
     }
 
     @Override
@@ -75,9 +86,12 @@ public final class ESLintAnnotation extends org.openide.text.Annotation implemen
     @Override
     public int hashCode() {
         int hash = 3;
+
         hash = 97 * hash + Objects.hashCode(this.reason);
         hash = 97 * hash + this.line;
-        hash = 97 * hash + this.col;
+        hash = 97 * hash + this.startCol;
+        hash = 97 * hash + this.endCol;
+
         return hash;
     }
 
@@ -96,7 +110,11 @@ public final class ESLintAnnotation extends org.openide.text.Annotation implemen
         if (this.line != other.line) {
             return false;
         }
-        if (this.col != other.col) {
+        if (this.startCol != other.startCol) {
+            return false;
+        }
+
+        if (this.endCol != other.endCol) {
             return false;
         }
         return Objects.equals(this.reason, other.reason);
@@ -114,7 +132,24 @@ public final class ESLintAnnotation extends org.openide.text.Annotation implemen
     public String toString() {
         return getShortDescription();
     }
-    
-    
 
+//    public long getStartOffest() {
+//        return startOffest;
+//    }
+//
+//    public int getLength() {
+//        return length;
+//    }
+//
+//    public String getRuleKey() {
+//        return ruleKey;
+//    }
+//
+//    public String getRuleName() {
+//        return ruleName;
+//    }
+//
+//    public String getSeverity() {
+//        return severity;
+//    }
 }

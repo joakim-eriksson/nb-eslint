@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
-<type name="se-jocke-nb-eslint-jslintwarnannotation"
-      description_key="JSLintErrorLabel"
+<type name="se-jocke-nb-eslint-eslintwarnannotation"
+      description_key="ESLintWarningLabel"
       localizing_bundle="se.jocke.nb.eslint.Bundle"
       visible="true"
       glyph="nbresloc:/org/netbeans/modules/editor/hints/resources/warning-glyph.gif"
-      highlight="#DBD804"
       type="linepart"
-      use_custom_sidebar_color="true"
-      custom_sidebar_color="0xFFBE00"
-      severity="warning"/>
+      waveunderline="0xDBD804"
+      severity="warning" />
