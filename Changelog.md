@@ -1,5 +1,14 @@
 # Changelog
 
+## Update in 1.5.0
+
+### General
+1 - Fixed some options panel UI.  
+
+### Fixes
+1 - [#17](https://github.com/joakim-eriksson/nb-eslint/issues/17): Underline the errors instead of change the background.  
+
+
 ## Update in 1.4.0
 
 ### General
