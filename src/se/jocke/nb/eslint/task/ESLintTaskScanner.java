@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.tasklist.PushTaskScanner;
@@ -35,11 +36,11 @@ public class ESLintTaskScanner extends PushTaskScanner {
 
     private static final Logger LOG = Logger.getLogger(ESLintTaskScanner.class.getName());
 
-    private static final Map<String, String> ERROR_TYPE_TO_GROUP_MAP = new ConcurrentHashMap<>();
+    private static final Map<Integer, String> ERROR_TYPE_TO_GROUP_MAP = new ConcurrentHashMap<>();
 
     static {
-        ERROR_TYPE_TO_GROUP_MAP.put("ERROR", "nb-tasklist-error");
-        ERROR_TYPE_TO_GROUP_MAP.put("WARNING", "nb-tasklist-warning");
+        ERROR_TYPE_TO_GROUP_MAP.put(1, "nb-tasklist-warning");
+        ERROR_TYPE_TO_GROUP_MAP.put(2, "nb-tasklist-error");
     }
 
     private Callback callback;
@@ -131,9 +132,11 @@ public class ESLintTaskScanner extends PushTaskScanner {
         @Override
         public void handle(LintError error) {
             FileObject fileObject = FileUtil.toFileObject(new File(error.getFile()));
+
             if (!tasks.containsKey(fileObject)) {
                 tasks.put(fileObject, new ArrayList<Task>());
             }
+
             tasks.get(fileObject).add(Task.create(fileObject, ERROR_TYPE_TO_GROUP_MAP.get(error.getSeverity()), error.getMessage(), error.getLine()));
         }
 
