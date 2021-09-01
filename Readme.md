@@ -26,4 +26,4 @@ See [Changelog](./Changelog.md) for all information
 
 Version >= 1.4.0 is compatible to Apache NetBeans >= 9.0  
   
-Plugin is available at https://github.com/joakim-eriksson/nb-eslint/releases/tag/1.4.0
+Plugin is available at https://github.com/joakim-eriksson/nb-eslint/releases/tag/1.5.0
