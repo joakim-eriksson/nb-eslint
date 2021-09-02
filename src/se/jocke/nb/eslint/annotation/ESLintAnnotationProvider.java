@@ -19,13 +19,12 @@ import org.openide.text.Annotation;
 import org.openide.text.AnnotationProvider;
 import org.openide.text.Line;
 import org.openide.util.Lookup;
-import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
-import se.jocke.nb.eslint.Constants;
 import se.jocke.nb.eslint.ESLint;
 import se.jocke.nb.eslint.error.ErrorReporter;
 import se.jocke.nb.eslint.error.LintError;
-import se.jocke.nb.eslint.options.OptionsUtil;
+import se.jocke.nb.eslint.ui.options.ESLintOptionsModel;
+import se.jocke.nb.eslint.ui.options.OptionsUtil;
 
 /**
  *
@@ -42,7 +41,7 @@ public class ESLintAnnotationProvider extends FileChangeAdapter implements Annot
     }
 
     public void apply(final FileObject fileObject) {
-        if (NbPreferences.forModule(ESLint.class).getBoolean(Constants.IS_ESLINT_ENABLED, false)) {
+        if (ESLintOptionsModel.getDefault().getESLintConfigOption().equals("manual")) {
             if (OptionsUtil.isLintedFile(fileObject)) {
                 LOG.log(Level.INFO, "Start index file {0}", fileObject.getMIMEType());
 
@@ -50,7 +49,7 @@ public class ESLintAnnotationProvider extends FileChangeAdapter implements Annot
                     detachAll(fileObject);
 
                 } else {
-                    MAPPING.put(fileObject, new HashSet<Annotation>());
+                    MAPPING.put(fileObject, new HashSet<>());
                     fileObject.addFileChangeListener(this);
                 }
 

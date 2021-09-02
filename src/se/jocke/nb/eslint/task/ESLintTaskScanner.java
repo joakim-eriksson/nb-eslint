@@ -25,17 +25,14 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
-import se.jocke.nb.eslint.Constants;
 import se.jocke.nb.eslint.ESLint;
 import se.jocke.nb.eslint.error.ErrorReporter;
 import se.jocke.nb.eslint.error.LintError;
-import static se.jocke.nb.eslint.options.OptionsUtil.isLintedFile;
+import se.jocke.nb.eslint.ui.options.ESLintOptionsModel;
+import static se.jocke.nb.eslint.ui.options.OptionsUtil.isLintedFile;
 
 public class ESLintTaskScanner extends PushTaskScanner {
-
     private static final Logger LOG = Logger.getLogger(ESLintTaskScanner.class.getName());
-
     private static final Map<Integer, String> ERROR_TYPE_TO_GROUP_MAP = new ConcurrentHashMap<>();
 
     static {
@@ -61,10 +58,10 @@ public class ESLintTaskScanner extends PushTaskScanner {
 
     @Override
     public void setScope(final TaskScanningScope scope, final Callback callback) {
-        if (NbPreferences.forModule(ESLint.class).getBoolean(Constants.IS_ESLINT_ENABLED, false)) {
-            for (Stoppable stoppable : listeners) {
+        if (ESLintOptionsModel.getDefault().getESLintConfigOption().equals("manual")) {
+            listeners.forEach(stoppable -> {
                 stoppable.stop();
-            }
+            });
 
             listeners.clear();
 
@@ -134,7 +131,7 @@ public class ESLintTaskScanner extends PushTaskScanner {
             FileObject fileObject = FileUtil.toFileObject(new File(error.getFile()));
 
             if (!tasks.containsKey(fileObject)) {
-                tasks.put(fileObject, new ArrayList<Task>());
+                tasks.put(fileObject, new ArrayList<>());
             }
 
             tasks.get(fileObject).add(Task.create(fileObject, ERROR_TYPE_TO_GROUP_MAP.get(error.getSeverity()), error.getMessage(), error.getLine()));
@@ -142,9 +139,9 @@ public class ESLintTaskScanner extends PushTaskScanner {
 
         @Override
         public void done() {
-            for (Map.Entry<FileObject, List<Task>> entry : tasks.entrySet()) {
+            tasks.entrySet().forEach(entry -> {
                 callback.setTasks(entry.getKey(), entry.getValue());
-            }
+            });
         }
 
     }
@@ -155,6 +152,7 @@ public class ESLintTaskScanner extends PushTaskScanner {
     }
 
     private class JSFileRecursiveListener extends FileChangeAdapter implements Stoppable {
+
         private final FileObject root;
 
         private final ESLintIgnore ignore;
@@ -190,6 +188,7 @@ public class ESLintTaskScanner extends PushTaskScanner {
     }
 
     private class JSFileListener extends FileChangeAdapter implements Stoppable {
+
         private final FileObject file;
 
         public JSFileListener(FileObject file) {

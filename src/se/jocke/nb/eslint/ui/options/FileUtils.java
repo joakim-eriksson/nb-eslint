@@ -1,4 +1,4 @@
-package se.jocke.nb.eslint.options;
+package se.jocke.nb.eslint.ui.options;
 
 import java.io.File;
 import java.util.ArrayList;
