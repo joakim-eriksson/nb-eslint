@@ -5,9 +5,6 @@
         <folder name="text">
             <folder name="javascript"/>
         </folder>
-        <folder name="application">
-            <folder name="x-typescript"/>
-        </folder>
         <folder name="AnnotationTypes">
             <file name="se-jocke-nb-eslint-ESLintErrorAnnotation.xml" url="ESLintErrorAnnotation.xml"/>
             <file name="se-jocke-nb-eslint-ESLintWarnAnnotation.xml" url="ESLintWarnAnnotation.xml"/>
