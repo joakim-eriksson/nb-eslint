@@ -7,6 +7,7 @@
 
 ### Fixes
 1 - [#17](https://github.com/joakim-eriksson/nb-eslint/issues/17): Underline the errors instead of change the background.  
+2 - [#42](https://github.com/joakim-eriksson/nb-eslint/issues/42): Options will not be saved anymore.  
 
 
 ## Update in 1.4.0
